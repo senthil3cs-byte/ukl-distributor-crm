@@ -1,24 +1,23 @@
 const express = require("express");
 const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
+const fs = require("fs");
+const multer = require("multer");
+const XLSX = require("xlsx");
 
 const app = express();
-
 app.use(express.json());
 
-// ===== LOGIN =====
-app.post("/api/login", (req, res) => {
-  const { username, password } = req.body;
+const dataDir = process.env.RAILWAY_VOLUME_MOUNT_PATH || __dirname;
+if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-  if (username === "admin" && password === "1234") {
-    return res.json({ success: true, role: "Admin", username: "admin" });
-  }
+const uploadDir = path.join(dataDir, "uploads");
+if (!fs.existsSync(uploadDir)) fs.mkdirSync(uploadDir, { recursive: true });
 
-  return res.status(401).json({ success: false, message: "Invalid login" });
-});
+const upload = multer({ dest: uploadDir });
 
-// ===== DATABASE =====
-const db = new sqlite3.Database("data.db");
+const dbPath = path.join(dataDir, "data.db");
+const db = new sqlite3.Database(dbPath);
 
 db.serialize(() => {
   db.run(`
@@ -28,40 +27,161 @@ db.serialize(() => {
       district TEXT,
       distributor_name TEXT,
       mobile TEXT,
-      email TEXT
+      email TEXT,
+      updated_at TEXT DEFAULT CURRENT_TIMESTAMP
     )
   `);
 });
 
-// ===== API =====
+function norm(v) {
+  return String(v || "").trim();
+}
+
+// LOGIN
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body || {};
+
+  if (username === "admin" && password === "1234") {
+    return res.json({ success: true, role: "Admin", username: "admin" });
+  }
+
+  return res.status(401).json({ success: false, message: "Invalid login" });
+});
+
+// GET ALL
 app.get("/api/distributors", (req, res) => {
-  db.all("SELECT * FROM distributors", [], (err, rows) => {
+  db.all("SELECT * FROM distributors ORDER BY id DESC", [], (err, rows) => {
     if (err) return res.status(500).json({ error: err.message });
     res.json(rows);
   });
 });
 
+// ADD
 app.post("/api/distributors", (req, res) => {
-  const { state, district, distributor_name, mobile, email } = req.body;
+  const { state, district, distributor_name, mobile, email } = req.body || {};
+
+  if (!norm(district) || !norm(distributor_name)) {
+    return res.status(400).json({ error: "District and Distributor Name are required" });
+  }
 
   db.run(
-    `INSERT INTO distributors(state,district,distributor_name,mobile,email)
-     VALUES(?,?,?,?,?)`,
-    [state, district, distributor_name, mobile, email],
+    `INSERT INTO distributors(state,district,distributor_name,mobile,email,updated_at)
+     VALUES(?,?,?,?,?,datetime('now'))`,
+    [norm(state), norm(district), norm(distributor_name), norm(mobile), norm(email)],
     function (err) {
       if (err) return res.status(500).json({ error: err.message });
-      res.json({ success: true });
+      res.json({ success: true, id: this.lastID });
     }
   );
 });
 
-// ===== SERVE FRONTEND =====
+// EDIT
+app.put("/api/distributors/:id", (req, res) => {
+  const { state, district, distributor_name, mobile, email } = req.body || {};
+
+  if (!norm(district) || !norm(distributor_name)) {
+    return res.status(400).json({ error: "District and Distributor Name are required" });
+  }
+
+  db.run(
+    `UPDATE distributors
+        SET state=?, district=?, distributor_name=?, mobile=?, email=?, updated_at=datetime('now')
+      WHERE id=?`,
+    [norm(state), norm(district), norm(distributor_name), norm(mobile), norm(email), req.params.id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, changes: this.changes });
+    }
+  );
+});
+
+// DELETE
+app.delete("/api/distributors/:id", (req, res) => {
+  db.run(`DELETE FROM distributors WHERE id=?`, [req.params.id], function (err) {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, changes: this.changes });
+  });
+});
+
+// EXCEL IMPORT
+app.post("/api/import-excel", upload.single("file"), (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const workbook = XLSX.readFile(req.file.path);
+    const sheetName = workbook.SheetNames[0];
+    const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { defval: "" });
+
+    let inserted = 0;
+    let skipped = 0;
+
+    const stmt = db.prepare(`
+      INSERT INTO distributors(state,district,distributor_name,mobile,email,updated_at)
+      VALUES(?,?,?,?,?,datetime('now'))
+    `);
+
+    for (const row of rows) {
+      const lowered = {};
+      Object.keys(row).forEach(k => {
+        lowered[String(k).trim().toLowerCase()] = row[k];
+      });
+
+      const state = norm(lowered["state"] || lowered["state name"] || lowered["st"]);
+      const district = norm(lowered["district"] || lowered["district name"] || lowered["districts"]);
+      const distributor = norm(
+        lowered["distributor"] ||
+        lowered["distributor name"] ||
+        lowered["name"] ||
+        lowered["dealer"]
+      );
+      const mobile = norm(
+        lowered["mobile"] ||
+        lowered["mobile no"] ||
+        lowered["phone"] ||
+        lowered["contact"]
+      );
+      const email = norm(
+        lowered["email"] ||
+        lowered["email id"] ||
+        lowered["mail id"]
+      );
+
+      if (!district && !distributor && !state) {
+        skipped++;
+        continue;
+      }
+
+      if (!district || !distributor) {
+        skipped++;
+        continue;
+      }
+
+      stmt.run(state, district, distributor, mobile, email);
+      inserted++;
+    }
+
+    stmt.finalize(err => {
+      fs.unlink(req.file.path, () => {});
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, inserted, skipped, totalRows: rows.length });
+    });
+  } catch (e) {
+    if (req.file?.path) fs.unlink(req.file.path, () => {});
+    res.status(500).json({ error: e.message });
+  }
+});
+
+// FRONTEND
 app.use(express.static(path.join(__dirname, "public")));
 
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-// ===== PORT =====
+// PORT
 const PORT = process.env.PORT || 3001;
-app.listen(PORT, () => console.log("Server running on " + PORT));
+app.listen(PORT, () => {
+  console.log("Server running on " + PORT);
+});
