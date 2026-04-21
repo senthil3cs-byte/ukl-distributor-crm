@@ -27,6 +27,8 @@
       justify-content: center;
       align-items: center;
       min-height: 100vh;
+      padding: 20px;
+      box-sizing: border-box;
     }
 
     .login-card,
@@ -42,9 +44,10 @@
     }
 
     .layout {
-      max-width: 1400px;
+      max-width: 1450px;
       margin: 24px auto;
       padding: 0 16px 24px;
+      box-sizing: border-box;
     }
 
     .topbar {
@@ -52,6 +55,7 @@
       justify-content: space-between;
       align-items: center;
       margin-bottom: 18px;
+      gap: 12px;
     }
 
     h1 {
@@ -133,14 +137,14 @@
     .grid-2 {
       display: grid;
       grid-template-columns: 420px 1fr;
-      gap: 18px;
+      gap: 20px;
       align-items: start;
     }
 
     .right-grid {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
     }
 
     .card {
@@ -179,6 +183,10 @@
       padding: 12px 16px;
     }
 
+    .table-wrap {
+      overflow-x: auto;
+    }
+
     table {
       width: 100%;
       border-collapse: collapse;
@@ -199,9 +207,13 @@
       color: #0f6b3a;
     }
 
+    tr.active-row {
+      background: #fff7d6;
+    }
+
     #map {
       width: 100%;
-      height: 700px;
+      height: 620px;
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid #d6ded8;
@@ -219,7 +231,7 @@
       }
 
       #map {
-        height: 520px;
+        height: 500px;
       }
     }
   </style>
@@ -281,27 +293,29 @@
 
             <input id="search" placeholder="Search..." oninput="renderTable()" />
 
-            <table>
-              <thead>
-                <tr>
-                  <th>ID</th>
-                  <th>State</th>
-                  <th>District</th>
-                  <th>Name</th>
-                  <th>Mobile</th>
-                  <th>Email</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody id="rows"></tbody>
-            </table>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>ID</th>
+                    <th>State</th>
+                    <th>District</th>
+                    <th>Name</th>
+                    <th>Mobile</th>
+                    <th>Email</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <tbody id="rows"></tbody>
+              </table>
+            </div>
           </div>
 
           <div class="card">
             <h3>India Map</h3>
             <div id="map"></div>
             <div class="map-note">
-              Real India base map with distributor markers. Add more district coordinates gradually for broader coverage.
+              Click a table row to highlight that distributor on the map. Map auto-zooms to visible distributors.
             </div>
           </div>
         </div>
@@ -313,9 +327,11 @@
 
   <script>
     let allRows = [];
+    let filteredRows = [];
     let map;
     let markerLayer;
-    let isLoggedIn = false;
+    let selectedId = null;
+    let markerMap = {};
 
     const districtCoords = {
       "CHENNAI": [13.0827, 80.2707],
@@ -354,7 +370,24 @@
       "INDORE": [22.7196, 75.8577],
       "GUWAHATI": [26.1445, 91.7362],
       "NOIDA": [28.5355, 77.3910],
-      "GURUGRAM": [28.4595, 77.0266]
+      "GURUGRAM": [28.4595, 77.0266],
+      "CHANDIGARH": [30.7333, 76.7794],
+      "AMRITSAR": [31.6340, 74.8723],
+      "JODHPUR": [26.2389, 73.0243],
+      "UDAIPUR": [24.5854, 73.7125],
+      "KANPUR": [26.4499, 80.3319],
+      "VARANASI": [25.3176, 82.9739],
+      "AGRA": [27.1767, 78.0081],
+      "MYSURU": [12.2958, 76.6394],
+      "MANGALURU": [12.9141, 74.8560],
+      "NASHIK": [19.9975, 73.7898],
+      "AURANGABAD": [19.8762, 75.3433],
+      "VADODARA": [22.3072, 73.1812],
+      "RAJKOT": [22.3039, 70.8022],
+      "JAMNAGAR": [22.4707, 70.0577],
+      "DEHRADUN": [30.3165, 78.0322],
+      "SRINAGAR": [34.0837, 74.7973],
+      "JAMMU": [32.7266, 74.8570]
     };
 
     function normalizeDistrict(name) {
@@ -397,7 +430,6 @@
           return;
         }
 
-        isLoggedIn = true;
         document.getElementById("loginView").classList.add("hidden");
         document.getElementById("appView").classList.remove("hidden");
 
@@ -409,10 +441,7 @@
     }
 
     function logout() {
-      isLoggedIn = false;
-      document.getElementById("appView").classList.add("hidden");
-      document.getElementById("loginView").classList.remove("hidden");
-      showLoginError("");
+      location.reload();
     }
 
     async function loadRows() {
@@ -427,30 +456,34 @@
       const tbody = document.getElementById("rows");
       tbody.innerHTML = "";
 
-      allRows
-        .filter(r =>
-          (r.state || "").toLowerCase().includes(q) ||
-          (r.district || "").toLowerCase().includes(q) ||
-          (r.distributor_name || "").toLowerCase().includes(q) ||
-          (r.mobile || "").toLowerCase().includes(q) ||
-          (r.email || "").toLowerCase().includes(q)
-        )
-        .forEach(r => {
-          const tr = document.createElement("tr");
-          tr.innerHTML = `
-            <td>${r.id || ""}</td>
-            <td>${r.state || ""}</td>
-            <td>${r.district || ""}</td>
-            <td>${r.distributor_name || ""}</td>
-            <td>${r.mobile || ""}</td>
-            <td>${r.email || ""}</td>
-            <td>
-              <button class="small-btn edit-btn" onclick="editRow(${r.id})">Edit</button>
-              <button class="small-btn delete-btn" onclick="deleteRow(${r.id})">Delete</button>
-            </td>
-          `;
-          tbody.appendChild(tr);
-        });
+      filteredRows = allRows.filter(r =>
+        (r.state || "").toLowerCase().includes(q) ||
+        (r.district || "").toLowerCase().includes(q) ||
+        (r.distributor_name || "").toLowerCase().includes(q) ||
+        (r.mobile || "").toLowerCase().includes(q) ||
+        (r.email || "").toLowerCase().includes(q)
+      );
+
+      filteredRows.forEach(r => {
+        const tr = document.createElement("tr");
+        if (selectedId === r.id) tr.classList.add("active-row");
+
+        tr.innerHTML = `
+          <td>${r.id || ""}</td>
+          <td>${r.state || ""}</td>
+          <td>${r.district || ""}</td>
+          <td>${r.distributor_name || ""}</td>
+          <td>${r.mobile || ""}</td>
+          <td>${r.email || ""}</td>
+          <td>
+            <button class="small-btn edit-btn" onclick="event.stopPropagation(); editRow(${r.id})">Edit</button>
+            <button class="small-btn delete-btn" onclick="event.stopPropagation(); deleteRow(${r.id})">Delete</button>
+          </td>
+        `;
+
+        tr.onclick = () => focusDistributor(r.id);
+        tbody.appendChild(tr);
+      });
     }
 
     function editRow(id) {
@@ -476,6 +509,9 @@
       document.getElementById("mobile").value = "";
       document.getElementById("email").value = "";
       showSaveMsg("");
+      selectedId = null;
+      renderTable();
+      drawMarkers();
     }
 
     async function saveDistributor() {
@@ -527,6 +563,7 @@
         }
 
         showSaveMsg("Deleted successfully");
+        if (selectedId === id) selectedId = null;
         loadRows();
       } catch (e) {
         showSaveMsg("Delete request failed", true);
@@ -580,17 +617,22 @@
       if (!markerLayer) return;
 
       markerLayer.clearLayers();
+      markerMap = {};
 
-      allRows.forEach(r => {
+      const bounds = [];
+
+      filteredRows.forEach(r => {
         const coords = districtCoords[normalizeDistrict(r.district)];
         if (!coords) return;
 
+        const isSelected = selectedId === r.id;
+
         const marker = L.circleMarker(coords, {
-          radius: 7,
-          color: "#065f46",
-          weight: 1,
-          fillColor: "#16a34a",
-          fillOpacity: 0.9
+          radius: isSelected ? 10 : 7,
+          color: isSelected ? "#b45309" : "#065f46",
+          weight: isSelected ? 2 : 1,
+          fillColor: isSelected ? "#f59e0b" : "#16a34a",
+          fillOpacity: 0.95
         });
 
         marker.bindPopup(`
@@ -601,8 +643,32 @@
           Email: ${r.email || ""}
         `);
 
-        markerLayer.addLayer(marker);
+        marker.on("click", () => {
+          selectedId = r.id;
+          renderTable();
+          drawMarkers();
+        });
+
+        marker.addTo(markerLayer);
+        markerMap[r.id] = marker;
+        bounds.push(coords);
       });
+
+      if (selectedId && markerMap[selectedId]) {
+        const marker = markerMap[selectedId];
+        map.setView(marker.getLatLng(), 8);
+        marker.openPopup();
+      } else if (bounds.length > 0) {
+        map.fitBounds(bounds, { padding: [30, 30] });
+      } else {
+        map.setView([22.9734, 78.6569], 5);
+      }
+    }
+
+    function focusDistributor(id) {
+      selectedId = id;
+      renderTable();
+      drawMarkers();
     }
   </script>
 </body>
