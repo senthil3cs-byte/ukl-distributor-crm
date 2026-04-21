@@ -5,144 +5,84 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UKL Distributor CRM</title>
   <style>
-    :root {
-      --green-900: #14532d;
-      --green-800: #166534;
-      --green-700: #15803d;
-      --green-100: #dcfce7;
-      --green-50: #f0fdf4;
-      --amber: #f59e0b;
-      --red: #dc2626;
-      --gray-900: #111827;
-      --gray-600: #4b5563;
-      --gray-300: #d1d5db;
-      --white: #ffffff;
+    body{
+      margin:0;font-family:Arial,sans-serif;background:#dfe9e2;
+      display:flex;justify-content:center;align-items:center;min-height:100vh;
     }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: Arial, Helvetica, sans-serif;
-      background: var(--green-50);
-      color: var(--gray-900);
+    .card{
+      background:#fff;padding:28px;border-radius:18px;width:420px;
+      box-shadow:0 8px 30px rgba(0,0,0,.08);
     }
-    .wrap { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .card {
-      background: var(--white);
-      border-radius: 14px;
-      box-shadow: 0 2px 12px rgba(0,0,0,.08);
-      padding: 16px;
+    h1{margin:0 0 6px;color:#0f6b3a;font-size:28px}
+    .sub{margin:0 0 18px;color:#0f6b3a}
+    input,button,select{
+      width:100%;padding:14px;border-radius:12px;border:1px solid #cfd5d1;
+      box-sizing:border-box;font-size:16px;margin-bottom:14px;
     }
-    .hidden { display: none !important; }
-    .title { color: var(--green-800); margin: 0 0 4px; }
-    .subtitle { color: var(--green-700); margin: 0 0 16px; }
-    .grid { display: grid; gap: 16px; }
-    .login-box { max-width: 420px; margin: 70px auto; }
-    .two { grid-template-columns: 1.15fr 1fr; }
-    .stats { grid-template-columns: repeat(4, minmax(120px, 1fr)); }
-    .stat { background: var(--white); border-radius: 14px; padding: 16px; box-shadow: 0 2px 12px rgba(0,0,0,.06); }
-    .stat small { color: var(--gray-600); display: block; margin-bottom: 6px; }
-    .stat strong { font-size: 26px; }
-    input, select, button {
-      font: inherit;
-      padding: 10px 12px;
-      border-radius: 10px;
-      border: 1px solid var(--gray-300);
-      width: 100%;
+    button{
+      background:#148a3b;color:#fff;border:none;font-weight:700;cursor:pointer;
     }
-    input:focus, select:focus { outline: 2px solid #bbf7d0; border-color: var(--green-700); }
-    button { cursor: pointer; border: none; }
-    .btn-green { background: var(--green-700); color: var(--white); }
-    .btn-amber { background: var(--amber); color: var(--white); }
-    .btn-red { background: var(--red); color: var(--white); }
-    .btn-gray { background: #6b7280; color: var(--white); }
-    .row { display: grid; grid-template-columns: repeat(5, minmax(120px,1fr)); gap: 10px; }
-    .row-6 { display: grid; grid-template-columns: repeat(6, minmax(120px,1fr)); gap: 10px; }
-    .actions { display: flex; gap: 8px; flex-wrap: wrap; }
-    .mapbox { min-height: 620px; }
-    svg { width: 100%; height: 620px; border: 1px solid var(--gray-300); border-radius: 10px; background: #f9fafb; }
-    table { width: 100%; border-collapse: collapse; font-size: 14px; }
-    th, td { border: 1px solid #e5e7eb; padding: 8px; text-align: left; }
-    th { background: var(--green-100); }
-    tr.selected { background: #fef3c7; }
-    .muted { color: var(--gray-600); font-size: 13px; }
-    .topbar { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
-    .pill { background: var(--green-100); color: var(--green-900); border-radius: 999px; padding: 6px 12px; font-size: 13px; }
-    #msg { margin-top: 10px; color: var(--red); min-height: 20px; }
-    @media (max-width: 900px) {
-      .two, .stats, .row, .row-6 { grid-template-columns: 1fr; }
-      svg { height: 430px; }
-      .mapbox { min-height: auto; }
+    button:hover{background:#0f7431}
+    .hint{font-size:14px;color:#444}
+    .err{color:#d93025;margin-top:8px}
+    .hidden{display:none}
+    .topbar{
+      display:flex;justify-content:space-between;align-items:center;
+      margin-bottom:18px;
     }
+    .layout{
+      max-width:1100px;margin:24px auto;padding:0 16px;
+    }
+    .panel{
+      background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.06);
+      padding:18px;
+    }
+    table{
+      width:100%;border-collapse:collapse;margin-top:16px;background:#fff;
+    }
+    th,td{
+      border:1px solid #dfe5e1;padding:10px;text-align:left;font-size:14px;
+    }
+    th{background:#e8f4ec;color:#0f6b3a}
+    .grid{
+      display:grid;grid-template-columns:1fr 1fr;gap:18px;
+    }
+    @media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
   </style>
 </head>
 <body>
-  <div id="loginView" class="wrap">
-    <div class="card login-box">
-      <h1 class="title">UKL Distributor CRM</h1>
-      <p class="subtitle">Login to continue</p>
-      <div class="grid">
-        <input id="loginUser" placeholder="Username" value="admin" />
-        <input id="loginPass" placeholder="Password" type="password" value="1234" />
-        <button id="loginBtn" class="btn-green">Login</button>
-        <div class="muted">Default login: admin / 1234</div>
-        <div id="msg"></div>
-      </div>
-    </div>
+  <div id="loginView" class="card">
+    <h1>UKL Distributor CRM</h1>
+    <p class="sub">Login to continue</p>
+    <input id="username" value="admin" placeholder="Username" />
+    <input id="password" value="1234" type="password" placeholder="Password" />
+    <button onclick="login()">Login</button>
+    <div class="hint">Default login: admin / 1234</div>
+    <div id="loginError" class="err"></div>
   </div>
 
-  <div id="appView" class="wrap hidden">
-    <div class="topbar">
-      <div>
-        <h1 class="title">UKL Instruments Pvt Ltd</h1>
-        <p class="subtitle">Live Distributor CRM</p>
+  <div id="appView" class="hidden" style="width:100%">
+    <div class="layout">
+      <div class="topbar">
+        <h1 style="margin:0">UKL Distributor CRM</h1>
+        <button style="width:auto;padding:10px 16px" onclick="logout()">Logout</button>
       </div>
-      <div class="actions">
-        <span id="userPill" class="pill"></span>
-        <button id="logoutBtn" class="btn-gray">Logout</button>
-      </div>
-    </div>
 
-    <div class="grid stats" style="margin-bottom:16px;">
-      <div class="stat"><small>Total Records</small><strong id="statTotal">0</strong></div>
-      <div class="stat"><small>Tamil Nadu</small><strong id="statTN">0</strong></div>
-      <div class="stat"><small>Mapped Districts</small><strong id="statMapped">0</strong></div>
-      <div class="stat"><small>Unmapped</small><strong id="statUnmapped">0</strong></div>
-    </div>
-
-    <div class="card" style="margin-bottom:16px;">
-      <div class="row-6">
-        <input id="state" placeholder="State" value="Tamil Nadu" />
-        <input id="district" placeholder="District" />
-        <input id="name" placeholder="Distributor Name" />
-        <input id="mobile" placeholder="Mobile" />
-        <input id="email" placeholder="Email" />
-        <div class="actions">
-          <button id="saveBtn" class="btn-green">Add</button>
-          <button id="cancelBtn" class="btn-gray">Cancel</button>
+      <div class="grid">
+        <div class="panel">
+          <h3>Add Distributor</h3>
+          <input id="state" placeholder="State" value="Tamil Nadu" />
+          <input id="district" placeholder="District" />
+          <input id="distributor_name" placeholder="Distributor Name" />
+          <input id="mobile" placeholder="Mobile" />
+          <input id="email" placeholder="Email" />
+          <button onclick="addDistributor()">Save</button>
+          <div id="saveMsg"></div>
         </div>
-      </div>
-    </div>
 
-    <div class="card" style="margin-bottom:16px;">
-      <input id="search" placeholder="Search district / distributor / mobile / email" />
-    </div>
-
-    <div class="grid two">
-      <div class="card mapbox">
-        <h3 style="margin-top:0;">Tamil Nadu Map</h3>
-        <svg viewBox="60 80 220 310" id="tnMap">
-          <path
-            d="M170 90 L200 100 L225 120 L235 145 L230 170 L215 185 L225 210 L215 235 L220 255 L235 280 L230 305 L215 330 L200 350 L182 370 L162 378 L145 370 L130 350 L118 325 L105 300 L95 275 L90 245 L95 220 L105 195 L115 170 L130 145 L145 125 L160 105 Z"
-            fill="#dcfce7" stroke="#15803d" stroke-width="3" />
-        </svg>
-        <div id="detailBox" class="card" style="margin-top:12px; background:#f9fafb; box-shadow:none;">
-          Click a map dot or table row.
-        </div>
-      </div>
-
-      <div class="card">
-        <h3 style="margin-top:0;">Distributor Table</h3>
-        <div style="overflow:auto; max-height:720px;">
+        <div class="panel">
+          <h3>Distributor List</h3>
+          <input id="search" placeholder="Search..." oninput="renderTable()" />
           <table>
             <thead>
               <tr>
@@ -152,10 +92,9 @@
                 <th>Name</th>
                 <th>Mobile</th>
                 <th>Email</th>
-                <th>Actions</th>
               </tr>
             </thead>
-            <tbody id="rowsBody"></tbody>
+            <tbody id="rows"></tbody>
           </table>
         </div>
       </div>
@@ -163,246 +102,116 @@
   </div>
 
   <script>
-    const districtCoords = {
-      Ariyalur: { x: 188, y: 160 }, Chengalpattu: { x: 235, y: 125 }, Chennai: { x: 245, y: 110 },
-      Coimbatore: { x: 95, y: 245 }, Cuddalore: { x: 220, y: 145 }, Dharmapuri: { x: 155, y: 180 },
-      Dindigul: { x: 145, y: 245 }, Erode: { x: 118, y: 215 }, Kallakurichi: { x: 185, y: 165 },
-      Kancheepuram: { x: 225, y: 120 }, Karur: { x: 145, y: 215 }, Krishnagiri: { x: 165, y: 160 },
-      Madurai: { x: 165, y: 275 }, Mayiladuthurai: { x: 218, y: 160 }, Nagapattinam: { x: 225, y: 172 },
-      Namakkal: { x: 140, y: 205 }, Nilgiris: { x: 92, y: 205 }, Perambalur: { x: 178, y: 172 },
-      Pudukkottai: { x: 182, y: 248 }, Ramanathapuram: { x: 215, y: 295 }, Ranipet: { x: 210, y: 130 },
-      Salem: { x: 145, y: 190 }, Sivaganga: { x: 190, y: 278 }, Tenkasi: { x: 125, y: 338 },
-      Thanjavur: { x: 195, y: 210 }, Theni: { x: 135, y: 285 }, Thiruvallur: { x: 230, y: 105 },
-      Thiruvarur: { x: 205, y: 195 }, Thoothukudi: { x: 165, y: 355 }, Tiruchirappalli: { x: 170, y: 205 },
-      Tirunelveli: { x: 145, y: 350 }, Tirupathur: { x: 185, y: 155 }, Tiruppur: { x: 108, y: 230 },
-      Tiruvannamalai: { x: 195, y: 148 }, Vellore: { x: 198, y: 138 }, Viluppuram: { x: 205, y: 155 },
-      Virudhunagar: { x: 160, y: 312 }
-    };
-
-    let rows = [];
-    let editingId = null;
-    let selectedId = null;
-    let currentUser = null;
-
-    const $ = (id) => document.getElementById(id);
-
-    function normalizeDistrictName(name) {
-      return Object.keys(districtCoords).find(
-        (d) => d.toLowerCase() === String(name || "").trim().toLowerCase()
-      );
-    }
-
-    async function api(url, options = {}) {
-      const res = await fetch(url, {
-        headers: { "Content-Type": "application/json", ...(options.headers || {}) },
-        ...options,
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Request failed");
-      return data;
-    }
+    let allRows = [];
 
     async function login() {
+      const loginError = document.getElementById("loginError");
+      loginError.textContent = "";
+
       try {
-        const data = await api("/api/login", {
+        const res = await fetch("/api/login", {
           method: "POST",
-          body: JSON.stringify({ username: $("loginUser").value, password: $("loginPass").value }),
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            username: document.getElementById("username").value.trim(),
+            password: document.getElementById("password").value.trim()
+          })
         });
-        currentUser = data.user;
-        $("loginView").classList.add("hidden");
-        $("appView").classList.remove("hidden");
-        $("userPill").textContent = `${data.user.username} (${data.user.role})`;
-        await loadRows();
-      } catch (err) {
-        $("msg").textContent = err.message;
+
+        const data = await res.json();
+
+        if (!res.ok || !data.success) {
+          loginError.textContent = data.message || "Invalid login";
+          return;
+        }
+
+        document.getElementById("loginView").classList.add("hidden");
+        document.getElementById("appView").classList.remove("hidden");
+        loadRows();
+      } catch (e) {
+        loginError.textContent = "Login request failed";
       }
     }
 
     function logout() {
-      currentUser = null;
-      $("appView").classList.add("hidden");
-      $("loginView").classList.remove("hidden");
-      $("msg").textContent = "";
+      document.getElementById("appView").classList.add("hidden");
+      document.getElementById("loginView").classList.remove("hidden");
     }
 
     async function loadRows() {
-      rows = await api("/api/distributors");
-      render();
+      const res = await fetch("/api/distributors");
+      allRows = await res.json();
+      renderTable();
     }
 
-    function renderStats(filtered) {
-      const mapped = filtered.filter(r => normalizeDistrictName(r.district)).length;
-      $("statTotal").textContent = filtered.length;
-      $("statTN").textContent = filtered.filter(r => String(r.state || "").toLowerCase().includes("tamil")).length;
-      $("statMapped").textContent = mapped;
-      $("statUnmapped").textContent = filtered.length - mapped;
-    }
+    function renderTable() {
+      const q = document.getElementById("search").value.toLowerCase();
+      const tbody = document.getElementById("rows");
+      tbody.innerHTML = "";
 
-    function renderMap(filtered) {
-      const svg = $("tnMap");
-      svg.querySelectorAll(".dot,.base-dot").forEach(n => n.remove());
-
-      Object.entries(districtCoords).forEach(([district, point]) => {
-        const base = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        base.setAttribute("cx", point.x);
-        base.setAttribute("cy", point.y);
-        base.setAttribute("r", 3);
-        base.setAttribute("fill", "#cbd5e1");
-        base.setAttribute("stroke", "#14532d");
-        base.setAttribute("class", "base-dot");
-        svg.appendChild(base);
-      });
-
-      filtered.forEach((row) => {
-        const key = normalizeDistrictName(row.district);
-        if (!key) return;
-        const point = districtCoords[key];
-        const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-        circle.setAttribute("cx", point.x);
-        circle.setAttribute("cy", point.y);
-        circle.setAttribute("r", selectedId === row.id ? 8 : 6);
-        circle.setAttribute("fill", selectedId === row.id ? "#f59e0b" : "#16a34a");
-        circle.setAttribute("stroke", "#14532d");
-        circle.setAttribute("stroke-width", "1.5");
-        circle.setAttribute("class", "dot");
-        circle.style.cursor = "pointer";
-        circle.addEventListener("click", () => selectRow(row.id));
-        svg.appendChild(circle);
-      });
-    }
-
-    function renderTable(filtered) {
-      const q = $("rowsBody");
-      q.innerHTML = "";
-      filtered.forEach((r) => {
-        const tr = document.createElement("tr");
-        if (selectedId === r.id) tr.className = "selected";
-        tr.innerHTML = `
-          <td>${r.id}</td>
-          <td>${r.state || ""}</td>
-          <td>${r.district || ""}</td>
-          <td>${r.distributor_name || ""}</td>
-          <td>${r.mobile || ""}</td>
-          <td>${r.email || ""}</td>
-          <td>
-            <div class="actions">
-              <button class="btn-amber" data-edit="${r.id}">Edit</button>
-              <button class="btn-red" data-del="${r.id}">Delete</button>
-            </div>
-          </td>
-        `;
-        tr.addEventListener("click", (e) => {
-          if (e.target.dataset.edit || e.target.dataset.del) return;
-          selectRow(r.id);
+      allRows
+        .filter(r =>
+          (r.state || "").toLowerCase().includes(q) ||
+          (r.district || "").toLowerCase().includes(q) ||
+          (r.distributor_name || "").toLowerCase().includes(q) ||
+          (r.mobile || "").toLowerCase().includes(q) ||
+          (r.email || "").toLowerCase().includes(q)
+        )
+        .forEach(r => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td>${r.id || ""}</td>
+            <td>${r.state || ""}</td>
+            <td>${r.district || ""}</td>
+            <td>${r.distributor_name || ""}</td>
+            <td>${r.mobile || ""}</td>
+            <td>${r.email || ""}</td>
+          `;
+          tbody.appendChild(tr);
         });
-        q.appendChild(tr);
-      });
-
-      q.querySelectorAll("[data-edit]").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          e.stopPropagation();
-          startEdit(Number(btn.dataset.edit));
-        });
-      });
-      q.querySelectorAll("[data-del]").forEach((btn) => {
-        btn.addEventListener("click", async (e) => {
-          e.stopPropagation();
-          const id = Number(btn.dataset.del);
-          if (!confirm("Delete this distributor?")) return;
-          await api(`/api/distributors/${id}`, { method: "DELETE" });
-          if (selectedId === id) selectedId = null;
-          if (editingId === id) resetForm();
-          await loadRows();
-        });
-      });
     }
 
-    function renderDetail() {
-      const row = rows.find(r => r.id === selectedId);
-      $("detailBox").innerHTML = row
-        ? `<b>State:</b> ${row.state || ""}<br><b>District:</b> ${row.district || ""}<br><b>Distributor:</b> ${row.distributor_name || ""}<br><b>Mobile:</b> ${row.mobile || ""}<br><b>Email:</b> ${row.email || ""}`
-        : "Click a map dot or table row.";
-    }
-
-    function render() {
-      const q = $("search").value.trim().toLowerCase();
-      const filtered = rows.filter((r) => {
-        const text = `${r.state || ""} ${r.district || ""} ${r.distributor_name || ""} ${r.mobile || ""} ${r.email || ""}`.toLowerCase();
-        return text.includes(q);
-      });
-      renderStats(filtered);
-      renderMap(filtered);
-      renderTable(filtered);
-      renderDetail();
-    }
-
-    function selectRow(id) {
-      selectedId = id;
-      render();
-    }
-
-    function startEdit(id) {
-      const row = rows.find(r => r.id === id);
-      if (!row) return;
-      editingId = id;
-      selectedId = id;
-      $("state").value = row.state || "Tamil Nadu";
-      $("district").value = row.district || "";
-      $("name").value = row.distributor_name || "";
-      $("mobile").value = row.mobile || "";
-      $("email").value = row.email || "";
-      $("saveBtn").textContent = "Update";
-      $("saveBtn").className = "btn-amber";
-      window.scrollTo({ top: 0, behavior: "smooth" });
-      render();
-    }
-
-    function resetForm() {
-      editingId = null;
-      $("state").value = "Tamil Nadu";
-      $("district").value = "";
-      $("name").value = "";
-      $("mobile").value = "";
-      $("email").value = "";
-      $("saveBtn").textContent = "Add";
-      $("saveBtn").className = "btn-green";
-    }
-
-    async function saveRow() {
+    async function addDistributor() {
       const payload = {
-        state: $("state").value.trim(),
-        district: $("district").value.trim(),
-        distributor_name: $("name").value.trim(),
-        mobile: $("mobile").value.trim(),
-        email: $("email").value.trim()
+        state: document.getElementById("state").value.trim(),
+        district: document.getElementById("district").value.trim(),
+        distributor_name: document.getElementById("distributor_name").value.trim(),
+        mobile: document.getElementById("mobile").value.trim(),
+        email: document.getElementById("email").value.trim()
       };
 
-      if (!payload.district || !payload.distributor_name) {
-        alert("District and Distributor Name are required");
-        return;
-      }
+      const msg = document.getElementById("saveMsg");
+      msg.textContent = "";
 
-      if (editingId) {
-        await api(`/api/distributors/${editingId}`, {
-          method: "PUT",
-          body: JSON.stringify(payload)
-        });
-      } else {
-        await api("/api/distributors", {
+      try {
+        const res = await fetch("/api/distributors", {
           method: "POST",
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
-      }
-      resetForm();
-      await loadRows();
-    }
 
-    $("loginBtn").addEventListener("click", login);
-    $("logoutBtn").addEventListener("click", logout);
-    $("saveBtn").addEventListener("click", saveRow);
-    $("cancelBtn").addEventListener("click", resetForm);
-    $("search").addEventListener("input", render);
-    $("loginPass").addEventListener("keydown", (e) => { if (e.key === "Enter") login(); });
+        const data = await res.json();
+
+        if (!res.ok) {
+          msg.textContent = data.error || "Save failed";
+          msg.style.color = "red";
+          return;
+        }
+
+        msg.textContent = "Saved successfully";
+        msg.style.color = "green";
+
+        document.getElementById("district").value = "";
+        document.getElementById("distributor_name").value = "";
+        document.getElementById("mobile").value = "";
+        document.getElementById("email").value = "";
+
+        loadRows();
+      } catch (e) {
+        msg.textContent = "Save request failed";
+        msg.style.color = "red";
+      }
+    }
   </script>
 </body>
 </html>
