@@ -3,6 +3,21 @@ const sqlite3 = require("sqlite3").verbose();
 const path = require("path");
 
 const app = express();
+app.post("/api/login", (req, res) => {
+  const { username, password } = req.body;
+
+  if (username === "admin" && password === "1234") {
+    return res.json({ success: true, role: "Admin", username: "admin" });
+  }
+
+  res.status(401).json({ success: false, message: "Invalid login" });
+});
+
+
+
+
+
+
 app.use(express.json());
 
 // ===== DATABASE =====
