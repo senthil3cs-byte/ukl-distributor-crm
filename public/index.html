@@ -4,110 +4,381 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>UKL Distributor CRM</title>
+
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+
   <style>
-    body{
-      margin:0;font-family:Arial,sans-serif;background:#dfe9e2;
-      display:flex;justify-content:center;align-items:center;min-height:100vh;
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      background: #dfe9e2;
+      min-height: 100vh;
     }
-    .card{
-      background:#fff;padding:28px;border-radius:18px;width:420px;
-      box-shadow:0 8px 30px rgba(0,0,0,.08);
+
+    .hidden {
+      display: none;
     }
-    h1{margin:0 0 6px;color:#0f6b3a;font-size:28px}
-    .sub{margin:0 0 18px;color:#0f6b3a}
-    input,button,select{
-      width:100%;padding:14px;border-radius:12px;border:1px solid #cfd5d1;
-      box-sizing:border-box;font-size:16px;margin-bottom:14px;
+
+    .login-wrap {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
     }
-    button{
-      background:#148a3b;color:#fff;border:none;font-weight:700;cursor:pointer;
+
+    .login-card,
+    .card {
+      background: #fff;
+      border-radius: 18px;
+      box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
     }
-    button:hover{background:#0f7431}
-    .hint{font-size:14px;color:#444}
-    .err{color:#d93025;margin-top:8px}
-    .hidden{display:none}
-    .topbar{
-      display:flex;justify-content:space-between;align-items:center;
-      margin-bottom:18px;
+
+    .login-card {
+      width: 420px;
+      padding: 28px;
     }
-    .layout{
-      max-width:1100px;margin:24px auto;padding:0 16px;
+
+    .layout {
+      max-width: 1400px;
+      margin: 24px auto;
+      padding: 0 16px 24px;
     }
-    .panel{
-      background:#fff;border-radius:16px;box-shadow:0 8px 30px rgba(0,0,0,.06);
-      padding:18px;
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
     }
-    table{
-      width:100%;border-collapse:collapse;margin-top:16px;background:#fff;
+
+    h1 {
+      margin: 0 0 6px;
+      color: #0f6b3a;
+      font-size: 28px;
     }
-    th,td{
-      border:1px solid #dfe5e1;padding:10px;text-align:left;font-size:14px;
+
+    .sub {
+      margin: 0 0 18px;
+      color: #0f6b3a;
     }
-    th{background:#e8f4ec;color:#0f6b3a}
-    .grid{
-      display:grid;grid-template-columns:1fr 1fr;gap:18px;
+
+    h3 {
+      margin-top: 0;
+      margin-bottom: 14px;
+      font-size: 18px;
     }
-    @media (max-width: 900px){ .grid{grid-template-columns:1fr;} }
+
+    input,
+    button {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 14px;
+      border-radius: 12px;
+      border: 1px solid #cfd5d1;
+      font-size: 16px;
+      margin-bottom: 14px;
+    }
+
+    button {
+      background: #148a3b;
+      color: #fff;
+      border: none;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0f7431;
+    }
+
+    .small-btn {
+      width: auto;
+      padding: 8px 10px;
+      margin: 0 6px 0 0;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+
+    .edit-btn {
+      background: #f59e0b;
+    }
+
+    .delete-btn {
+      background: #dc2626;
+    }
+
+    .secondary-btn {
+      background: #6b7280;
+    }
+
+    .hint {
+      font-size: 14px;
+      color: #444;
+    }
+
+    .err {
+      color: #d93025;
+      margin-top: 8px;
+    }
+
+    .msg {
+      margin-top: 8px;
+      font-size: 14px;
+      color: #0b6b37;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 420px 1fr;
+      gap: 18px;
+      align-items: start;
+    }
+
+    .right-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+
+    .card {
+      padding: 18px;
+    }
+
+    .row-btns {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .row-btns button {
+      flex: 1;
+      min-width: 140px;
+    }
+
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .top-actions input[type="file"] {
+      background: #fff;
+      padding: 10px;
+      margin: 0;
+      flex: 1;
+      min-width: 220px;
+    }
+
+    .top-actions button {
+      width: auto;
+      margin: 0;
+      padding: 12px 16px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      font-size: 14px;
+    }
+
+    th,
+    td {
+      border: 1px solid #dfe5e1;
+      padding: 10px;
+      text-align: left;
+      vertical-align: top;
+    }
+
+    th {
+      background: #e8f4ec;
+      color: #0f6b3a;
+    }
+
+    #map {
+      width: 100%;
+      height: 700px;
+      border-radius: 14px;
+      overflow: hidden;
+      border: 1px solid #d6ded8;
+    }
+
+    .map-note {
+      margin-top: 10px;
+      font-size: 13px;
+      color: #555;
+    }
+
+    @media (max-width: 1100px) {
+      .grid-2 {
+        grid-template-columns: 1fr;
+      }
+
+      #map {
+        height: 520px;
+      }
+    }
   </style>
 </head>
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-  <body>
-  <div id="loginView" class="card">
-    <h1>UKL Distributor CRM</h1>
-    <p class="sub">Login to continue</p>
-    <input id="username" value="admin" placeholder="Username" />
-    <input id="password" value="1234" type="password" placeholder="Password" />
-    <button onclick="login()">Login</button>
-    <div class="hint">Default login: admin / 1234</div>
-    <div id="loginError" class="err"></div>
+<body>
+  <div id="loginView" class="login-wrap">
+    <div class="login-card">
+      <h1>UKL Distributor CRM</h1>
+      <p class="sub">Login to continue</p>
+
+      <input id="username" value="admin" placeholder="Username" />
+      <input id="password" value="1234" type="password" placeholder="Password" />
+
+      <button onclick="login()">Login</button>
+
+      <div class="hint">Default login: admin / 1234</div>
+      <div id="loginError" class="err"></div>
+    </div>
   </div>
 
-  <div id="appView" class="hidden" style="width:100%">
+  <div id="appView" class="hidden">
     <div class="layout">
       <div class="topbar">
-        <h1 style="margin:0">UKL Distributor CRM</h1>
-        <button style="width:auto;padding:10px 16px" onclick="logout()">Logout</button>
+        <h1>UKL Distributor CRM</h1>
+        <button style="width:auto;padding:10px 16px;" onclick="logout()">Logout</button>
       </div>
 
-      <div class="grid">
-        <div class="panel">
-          <h3>Add Distributor</h3>
-          <input id="state" placeholder="State" value="Tamil Nadu" />
+      <div class="grid-2">
+        <div class="card">
+          <h3>Add / Edit Distributor</h3>
+
+          <input type="hidden" id="id" />
+          <input id="state" value="Tamil Nadu" placeholder="State" />
           <input id="district" placeholder="District" />
-          <input id="distributor_name" placeholder="Distributor Name" />
+          <input id="name" placeholder="Distributor Name" />
           <input id="mobile" placeholder="Mobile" />
           <input id="email" placeholder="Email" />
-          <button onclick="addDistributor()">Save</button>
-          <div id="saveMsg"></div>
+
+          <div class="row-btns">
+            <button onclick="saveDistributor()">Save</button>
+            <button class="secondary-btn" type="button" onclick="clearForm()">Clear</button>
+          </div>
+
+          <div id="saveMsg" class="msg"></div>
         </div>
 
-        <div class="panel">
-          <h3>Distributor List</h3>
-          <input id="search" placeholder="Search..." oninput="renderTable()" />
-          <table>
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>State</th>
-                <th>District</th>
-                <th>Name</th>
-                <th>Mobile</th>
-                <th>Email</th>
-              </tr>
-            </thead>
-            <tbody id="rows"></tbody>
-          </table>
+        <div class="right-grid">
+          <div class="card">
+            <h3>Excel Upload</h3>
+            <div class="top-actions">
+              <input type="file" id="file" accept=".xlsx,.xls" />
+              <button onclick="uploadExcel()">Upload Excel</button>
+            </div>
+            <div id="uploadMsg" class="msg"></div>
+          </div>
+
+          <div class="card">
+            <h3>Distributor List</h3>
+
+            <input id="search" placeholder="Search..." oninput="renderTable()" />
+
+            <table>
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>State</th>
+                  <th>District</th>
+                  <th>Name</th>
+                  <th>Mobile</th>
+                  <th>Email</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+
+          <div class="card">
+            <h3>India Map</h3>
+            <div id="map"></div>
+            <div class="map-note">
+              Real India base map with distributor markers. Add more district coordinates gradually for broader coverage.
+            </div>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
   <script>
     let allRows = [];
+    let map;
+    let markerLayer;
+    let isLoggedIn = false;
+
+    const districtCoords = {
+      "CHENNAI": [13.0827, 80.2707],
+      "COIMBATORE": [11.0168, 76.9558],
+      "MADURAI": [9.9252, 78.1198],
+      "TIRUPPUR": [11.1085, 77.3411],
+      "SALEM": [11.6643, 78.1460],
+      "ERODE": [11.3410, 77.7172],
+      "TRICHY": [10.7905, 78.7047],
+      "TIRUCHIRAPPALLI": [10.7905, 78.7047],
+      "VELLORE": [12.9165, 79.1325],
+      "THANJAVUR": [10.7867, 79.1378],
+      "TIRUNELVELI": [8.7139, 77.7567],
+      "THOOTHUKUDI": [8.7642, 78.1348],
+      "THIRUVANANTHAPURAM": [8.5241, 76.9366],
+      "KOCHI": [9.9312, 76.2673],
+      "BENGALURU": [12.9716, 77.5946],
+      "BANGALORE": [12.9716, 77.5946],
+      "HYDERABAD": [17.3850, 78.4867],
+      "MUMBAI": [19.0760, 72.8777],
+      "PUNE": [18.5204, 73.8567],
+      "DELHI": [28.6139, 77.2090],
+      "KOLKATA": [22.5726, 88.3639],
+      "AHMEDABAD": [23.0225, 72.5714],
+      "JAIPUR": [26.9124, 75.7873],
+      "LUCKNOW": [26.8467, 80.9462],
+      "PATNA": [25.5941, 85.1376],
+      "BHOPAL": [23.2599, 77.4126],
+      "NAGPUR": [21.1458, 79.0882],
+      "VISAKHAPATNAM": [17.6868, 83.2185],
+      "VIJAYAWADA": [16.5062, 80.6480],
+      "RAIPUR": [21.2514, 81.6296],
+      "BHUBANESWAR": [20.2961, 85.8245],
+      "RANCHI": [23.3441, 85.3096],
+      "SURAT": [21.1702, 72.8311],
+      "INDORE": [22.7196, 75.8577],
+      "GUWAHATI": [26.1445, 91.7362],
+      "NOIDA": [28.5355, 77.3910],
+      "GURUGRAM": [28.4595, 77.0266]
+    };
+
+    function normalizeDistrict(name) {
+      return String(name || "").trim().toUpperCase();
+    }
+
+    function showLoginError(text) {
+      document.getElementById("loginError").textContent = text || "";
+    }
+
+    function showSaveMsg(text, isError = false) {
+      const el = document.getElementById("saveMsg");
+      el.textContent = text || "";
+      el.style.color = isError ? "#d93025" : "#0b6b37";
+    }
+
+    function showUploadMsg(text, isError = false) {
+      const el = document.getElementById("uploadMsg");
+      el.textContent = text || "";
+      el.style.color = isError ? "#d93025" : "#0b6b37";
+    }
 
     async function login() {
-      const loginError = document.getElementById("loginError");
-      loginError.textContent = "";
+      showLoginError("");
 
       try {
         const res = await fetch("/api/login", {
@@ -122,27 +393,33 @@
         const data = await res.json();
 
         if (!res.ok || !data.success) {
-          loginError.textContent = data.message || "Invalid login";
+          showLoginError(data.message || "Invalid login");
           return;
         }
 
+        isLoggedIn = true;
         document.getElementById("loginView").classList.add("hidden");
         document.getElementById("appView").classList.remove("hidden");
+
+        initMap();
         loadRows();
       } catch (e) {
-        loginError.textContent = "Login request failed";
+        showLoginError("Login request failed");
       }
     }
 
     function logout() {
+      isLoggedIn = false;
       document.getElementById("appView").classList.add("hidden");
       document.getElementById("loginView").classList.remove("hidden");
+      showLoginError("");
     }
 
     async function loadRows() {
       const res = await fetch("/api/distributors");
       allRows = await res.json();
       renderTable();
+      drawMarkers();
     }
 
     function renderTable() {
@@ -167,26 +444,54 @@
             <td>${r.distributor_name || ""}</td>
             <td>${r.mobile || ""}</td>
             <td>${r.email || ""}</td>
+            <td>
+              <button class="small-btn edit-btn" onclick="editRow(${r.id})">Edit</button>
+              <button class="small-btn delete-btn" onclick="deleteRow(${r.id})">Delete</button>
+            </td>
           `;
           tbody.appendChild(tr);
         });
     }
 
-    async function addDistributor() {
+    function editRow(id) {
+      const r = allRows.find(x => x.id === id);
+      if (!r) return;
+
+      document.getElementById("id").value = r.id || "";
+      document.getElementById("state").value = r.state || "";
+      document.getElementById("district").value = r.district || "";
+      document.getElementById("name").value = r.distributor_name || "";
+      document.getElementById("mobile").value = r.mobile || "";
+      document.getElementById("email").value = r.email || "";
+
+      showSaveMsg("Edit mode loaded");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    function clearForm() {
+      document.getElementById("id").value = "";
+      document.getElementById("state").value = "Tamil Nadu";
+      document.getElementById("district").value = "";
+      document.getElementById("name").value = "";
+      document.getElementById("mobile").value = "";
+      document.getElementById("email").value = "";
+      showSaveMsg("");
+    }
+
+    async function saveDistributor() {
+      const id = document.getElementById("id").value.trim();
+
       const payload = {
         state: document.getElementById("state").value.trim(),
         district: document.getElementById("district").value.trim(),
-        distributor_name: document.getElementById("distributor_name").value.trim(),
+        distributor_name: document.getElementById("name").value.trim(),
         mobile: document.getElementById("mobile").value.trim(),
         email: document.getElementById("email").value.trim()
       };
 
-      const msg = document.getElementById("saveMsg");
-      msg.textContent = "";
-
       try {
-        const res = await fetch("/api/distributors", {
-          method: "POST",
+        const res = await fetch(id ? `/api/distributors/${id}` : "/api/distributors", {
+          method: id ? "PUT" : "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(payload)
         });
@@ -194,26 +499,111 @@
         const data = await res.json();
 
         if (!res.ok) {
-          msg.textContent = data.error || "Save failed";
-          msg.style.color = "red";
+          showSaveMsg(data.error || "Save failed", true);
           return;
         }
 
-        msg.textContent = "Saved successfully";
-        msg.style.color = "green";
-
-        document.getElementById("district").value = "";
-        document.getElementById("distributor_name").value = "";
-        document.getElementById("mobile").value = "";
-        document.getElementById("email").value = "";
-
+        showSaveMsg(id ? "Updated successfully" : "Saved successfully");
+        clearForm();
         loadRows();
       } catch (e) {
-        msg.textContent = "Save request failed";
-        msg.style.color = "red";
+        showSaveMsg("Save request failed", true);
       }
     }
+
+    async function deleteRow(id) {
+      if (!confirm("Delete this record?")) return;
+
+      try {
+        const res = await fetch(`/api/distributors/${id}`, {
+          method: "DELETE"
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showSaveMsg(data.error || "Delete failed", true);
+          return;
+        }
+
+        showSaveMsg("Deleted successfully");
+        loadRows();
+      } catch (e) {
+        showSaveMsg("Delete request failed", true);
+      }
+    }
+
+    async function uploadExcel() {
+      const file = document.getElementById("file").files[0];
+      if (!file) {
+        showUploadMsg("Please choose an Excel file first", true);
+        return;
+      }
+
+      const fd = new FormData();
+      fd.append("file", file);
+
+      try {
+        const res = await fetch("/api/import-excel", {
+          method: "POST",
+          body: fd
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showUploadMsg(data.error || "Upload failed", true);
+          return;
+        }
+
+        showUploadMsg(`Excel imported. Inserted: ${data.inserted}, Skipped: ${data.skipped}`);
+        document.getElementById("file").value = "";
+        loadRows();
+      } catch (e) {
+        showUploadMsg("Upload request failed", true);
+      }
+    }
+
+    function initMap() {
+      if (map) return;
+
+      map = L.map("map").setView([22.9734, 78.6569], 5);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap"
+      }).addTo(map);
+
+      markerLayer = L.layerGroup().addTo(map);
+    }
+
+    function drawMarkers() {
+      if (!markerLayer) return;
+
+      markerLayer.clearLayers();
+
+      allRows.forEach(r => {
+        const coords = districtCoords[normalizeDistrict(r.district)];
+        if (!coords) return;
+
+        const marker = L.circleMarker(coords, {
+          radius: 7,
+          color: "#065f46",
+          weight: 1,
+          fillColor: "#16a34a",
+          fillOpacity: 0.9
+        });
+
+        marker.bindPopup(`
+          <b>${r.distributor_name || ""}</b><br>
+          State: ${r.state || ""}<br>
+          District: ${r.district || ""}<br>
+          Mobile: ${r.mobile || ""}<br>
+          Email: ${r.email || ""}
+        `);
+
+        markerLayer.addLayer(marker);
+      });
+    }
   </script>
-<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-  </body>
+</body>
 </html>
