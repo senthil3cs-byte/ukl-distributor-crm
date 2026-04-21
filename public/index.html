@@ -52,7 +52,7 @@
     }
 
     .layout {
-      max-width: 1450px;
+      max-width: 1500px;
       margin: 24px auto;
       padding: 0 16px 24px;
       box-sizing: border-box;
@@ -97,11 +97,13 @@
       margin-top: 0;
       margin-bottom: 14px;
       font-size: 18px;
+      color: #0f6b3a;
     }
 
     input,
     textarea,
-    button {
+    button,
+    select {
       width: 100%;
       box-sizing: border-box;
       padding: 14px;
@@ -109,6 +111,7 @@
       border: 1px solid #cfd5d1;
       font-size: 16px;
       margin-bottom: 14px;
+      background: #fff;
     }
 
     textarea {
@@ -165,7 +168,7 @@
       color: #0b6b37;
     }
 
-    .grid-2 {
+    .grid-main {
       display: grid;
       grid-template-columns: 460px 1fr;
       gap: 20px;
@@ -244,7 +247,7 @@
 
     #map {
       width: 100%;
-      height: 620px;
+      height: 680px;
       border-radius: 14px;
       overflow: hidden;
       border: 1px solid #d6ded8;
@@ -263,13 +266,81 @@
       gap: 10px;
     }
 
-    @media (max-width: 1100px) {
-      .grid-2 {
+    .tour-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 14px;
+      align-items: start;
+    }
+
+    .tour-selected-list,
+    .tour-state-list {
+      max-height: 300px;
+      overflow: auto;
+      border: 1px solid #dfe5e1;
+      border-radius: 12px;
+      padding: 10px;
+      background: #fafcfa;
+    }
+
+    .tour-item {
+      border: 1px solid #d9e3dc;
+      border-radius: 10px;
+      padding: 10px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      background: #fff;
+    }
+
+    .tour-item.selected {
+      background: #e9f8ee;
+      border-color: #16a34a;
+    }
+
+    .tour-badge {
+      display: inline-block;
+      background: #148a3b;
+      color: #fff;
+      border-radius: 999px;
+      padding: 2px 8px;
+      font-size: 12px;
+      margin-left: 6px;
+    }
+
+    .tour-stop {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 10px;
+      border-bottom: 1px solid #e5ece7;
+      font-size: 14px;
+    }
+
+    .tour-stop:last-child {
+      border-bottom: none;
+    }
+
+    .remove-stop {
+      width: auto;
+      margin: 0;
+      padding: 6px 10px;
+      font-size: 12px;
+      background: #dc2626;
+      border-radius: 8px;
+    }
+
+    @media (max-width: 1200px) {
+      .grid-main {
+        grid-template-columns: 1fr;
+      }
+
+      .tour-grid {
         grid-template-columns: 1fr;
       }
 
       #map {
-        height: 500px;
+        height: 520px;
       }
     }
   </style>
@@ -305,32 +376,32 @@
         <button style="width:auto;padding:10px 16px;" onclick="logout()">Logout</button>
       </div>
 
-      <div class="grid-2">
-        <div class="card">
-          <h3>Add / Edit Distributor</h3>
+      <div class="grid-main">
+        <div style="display:flex; flex-direction:column; gap:20px;">
+          <div class="card">
+            <h3>Add / Edit Distributor</h3>
 
-          <input type="hidden" id="id" />
-          <input id="state" value="Tamil Nadu" placeholder="State" />
-          <input id="district" placeholder="District" />
-          <input id="name" placeholder="Distributor Name" />
-          <input id="mobile" placeholder="Mobile" />
-          <input id="email" placeholder="Email" />
-          <textarea id="address" placeholder="Full Address"></textarea>
+            <input type="hidden" id="id" />
+            <input id="state" value="Tamil Nadu" placeholder="State" />
+            <input id="district" placeholder="District" />
+            <input id="name" placeholder="Distributor Name" />
+            <input id="mobile" placeholder="Mobile" />
+            <input id="email" placeholder="Email" />
+            <textarea id="address" placeholder="Full Address"></textarea>
 
-          <div class="coord-grid">
-            <input id="lat" placeholder="Latitude" readonly />
-            <input id="lng" placeholder="Longitude" readonly />
+            <div class="coord-grid">
+              <input id="lat" placeholder="Latitude" readonly />
+              <input id="lng" placeholder="Longitude" readonly />
+            </div>
+
+            <div class="row-btns">
+              <button onclick="saveDistributor()">Save</button>
+              <button class="secondary-btn" type="button" onclick="clearForm()">Clear</button>
+            </div>
+
+            <div id="saveMsg" class="msg"></div>
           </div>
 
-          <div class="row-btns">
-            <button onclick="saveDistributor()">Save</button>
-            <button class="secondary-btn" type="button" onclick="clearForm()">Clear</button>
-          </div>
-
-          <div id="saveMsg" class="msg"></div>
-        </div>
-
-        <div class="right-grid">
           <div class="card">
             <h3>Excel Upload</h3>
             <div class="top-actions">
@@ -340,6 +411,35 @@
             <div id="uploadMsg" class="msg"></div>
           </div>
 
+          <div class="card">
+            <h3>Business Tour Planner</h3>
+
+            <select id="tourState"></select>
+            <input id="tourDate" type="date" />
+            <textarea id="tourRemarks" placeholder="Remarks / Purpose of visit"></textarea>
+
+            <div class="tour-grid">
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;">Available Distributors in State</div>
+                <div id="tourStateList" class="tour-state-list"></div>
+              </div>
+
+              <div>
+                <div style="font-weight:700;margin-bottom:8px;">Selected Visit Stops</div>
+                <div id="tourSelectedList" class="tour-selected-list"></div>
+              </div>
+            </div>
+
+            <div class="row-btns" style="margin-top:14px;">
+              <button onclick="saveTourPlan()">Save Tour Plan</button>
+              <button class="secondary-btn" type="button" onclick="clearTourPlan()">Clear Tour</button>
+            </div>
+
+            <div id="tourMsg" class="msg"></div>
+          </div>
+        </div>
+
+        <div class="right-grid">
           <div class="card">
             <h3>Distributor List</h3>
             <input id="search" placeholder="Search..." oninput="renderTable()" />
@@ -366,7 +466,7 @@
             <h3>India Map</h3>
             <div id="map"></div>
             <div class="map-note">
-              Click anywhere on the map to choose an exact location. A draggable marker will be placed there and coordinates will be filled automatically.
+              Click anywhere on the map to set exact distributor location. In Business Tour mode, select a state and click distributors or markers to add them to the route. Route line connects selected stops in order.
             </div>
           </div>
         </div>
@@ -381,10 +481,15 @@
     let filteredRows = [];
     let map;
     let markerLayer;
+    let routeLayer;
     let selectedId = null;
     let markerMap = {};
     let selectedMapMarker = null;
     let selectedLatLng = null;
+
+    let statesList = [];
+    let stateDistributors = [];
+    let selectedTourStops = [];
 
     const districtCoords = {
       "CHENNAI": [13.0827, 80.2707],
@@ -402,7 +507,32 @@
       "BENGALURU": [12.9716, 77.5946],
       "HYDERABAD": [17.3850, 78.4867],
       "MUMBAI": [19.0760, 72.8777],
-      "DELHI": [28.6139, 77.2090]
+      "DELHI": [28.6139, 77.2090],
+      "PUNE": [18.5204, 73.8567],
+      "KOLKATA": [22.5726, 88.3639],
+      "AHMEDABAD": [23.0225, 72.5714],
+      "JAIPUR": [26.9124, 75.7873],
+      "LUCKNOW": [26.8467, 80.9462],
+      "PATNA": [25.5941, 85.1376],
+      "BHOPAL": [23.2599, 77.4126],
+      "NAGPUR": [21.1458, 79.0882],
+      "VISAKHAPATNAM": [17.6868, 83.2185],
+      "VIJAYAWADA": [16.5062, 80.6480],
+      "RAIPUR": [21.2514, 81.6296],
+      "BHUBANESWAR": [20.2961, 85.8245],
+      "RANCHI": [23.3441, 85.3096],
+      "SURAT": [21.1702, 72.8311],
+      "INDORE": [22.7196, 75.8577],
+      "GUWAHATI": [26.1445, 91.7362],
+      "NOIDA": [28.5355, 77.3910],
+      "GURUGRAM": [28.4595, 77.0266],
+      "CHANDIGARH": [30.7333, 76.7794],
+      "AMRITSAR": [31.6340, 74.8723],
+      "JODHPUR": [26.2389, 73.0243],
+      "UDAIPUR": [24.5854, 73.7125],
+      "KANPUR": [26.4499, 80.3319],
+      "VARANASI": [25.3176, 82.9739],
+      "AGRA": [27.1767, 78.0081]
     };
 
     function normalizeDistrict(name) {
@@ -421,6 +551,12 @@
 
     function showUploadMsg(text, isError = false) {
       const el = document.getElementById("uploadMsg");
+      el.textContent = text || "";
+      el.style.color = isError ? "#d93025" : "#0b6b37";
+    }
+
+    function showTourMsg(text, isError = false) {
+      const el = document.getElementById("tourMsg");
       el.textContent = text || "";
       el.style.color = isError ? "#d93025" : "#0b6b37";
     }
@@ -449,7 +585,8 @@
         document.getElementById("appView").classList.remove("hidden");
 
         initMap();
-        loadRows();
+        await loadRows();
+        await loadStates();
       } catch (e) {
         showLoginError("Login request failed");
       }
@@ -620,7 +757,8 @@
 
         showSaveMsg(id ? "Updated successfully" : "Saved successfully");
         clearForm();
-        loadRows();
+        await loadRows();
+        await loadStates();
       } catch (e) {
         showSaveMsg("Save request failed", true);
       }
@@ -643,7 +781,8 @@
 
         showSaveMsg("Deleted successfully");
         if (selectedId === id) selectedId = null;
-        loadRows();
+        await loadRows();
+        await loadStates();
       } catch (e) {
         showSaveMsg("Delete request failed", true);
       }
@@ -674,9 +813,173 @@
 
         showUploadMsg(`Excel imported. Inserted: ${data.inserted}, Skipped: ${data.skipped}`);
         document.getElementById("file").value = "";
-        loadRows();
+        await loadRows();
+        await loadStates();
       } catch (e) {
         showUploadMsg("Upload request failed", true);
+      }
+    }
+
+    async function loadStates() {
+      try {
+        const res = await fetch("/api/states");
+        statesList = await res.json();
+
+        const ddl = document.getElementById("tourState");
+        ddl.innerHTML = `<option value="">Select State</option>` +
+          statesList.map(s => `<option value="${s}">${s}</option>`).join("");
+
+        ddl.onchange = async function () {
+          await loadDistributorsByState(this.value);
+        };
+      } catch (e) {
+        console.log("Could not load states");
+      }
+    }
+
+    async function loadDistributorsByState(state) {
+      stateDistributors = [];
+      selectedTourStops = [];
+      renderTourStateList();
+      renderSelectedTourStops();
+      clearRoute();
+
+      if (!state) return;
+
+      const res = await fetch(`/api/distributors/by-state/${encodeURIComponent(state)}`);
+      stateDistributors = await res.json();
+
+      renderTourStateList();
+      drawMarkersForStateTour();
+    }
+
+    function renderTourStateList() {
+      const box = document.getElementById("tourStateList");
+
+      if (!stateDistributors.length) {
+        box.innerHTML = `<div style="color:#666;">No distributors loaded for selected state.</div>`;
+        return;
+      }
+
+      box.innerHTML = stateDistributors.map(r => {
+        const selected = selectedTourStops.some(x => x.id === r.id);
+        return `
+          <div class="tour-item ${selected ? "selected" : ""}" onclick="toggleTourStop(${r.id})">
+            <div><b>${r.distributor_name || ""}</b>${selected ? '<span class="tour-badge">Selected</span>' : ""}</div>
+            <div>${r.district || ""}</div>
+            <div style="font-size:12px;color:#666;">${r.mobile || ""}</div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderSelectedTourStops() {
+      const box = document.getElementById("tourSelectedList");
+
+      if (!selectedTourStops.length) {
+        box.innerHTML = `<div style="color:#666;">No stops selected yet.</div>`;
+        return;
+      }
+
+      box.innerHTML = selectedTourStops.map((r, idx) => `
+        <div class="tour-stop">
+          <div>
+            <b>${idx + 1}. ${r.distributor_name || ""}</b><br>
+            <span style="font-size:12px;color:#666;">${r.district || ""}</span>
+          </div>
+          <button class="remove-stop" onclick="removeTourStop(${r.id})">Remove</button>
+        </div>
+      `).join("");
+    }
+
+    function toggleTourStop(id) {
+      const row = stateDistributors.find(r => r.id === id);
+      if (!row) return;
+
+      const exists = selectedTourStops.some(x => x.id === id);
+      if (exists) {
+        selectedTourStops = selectedTourStops.filter(x => x.id !== id);
+      } else {
+        selectedTourStops.push(row);
+      }
+
+      renderTourStateList();
+      renderSelectedTourStops();
+      drawMarkersForStateTour();
+      drawRouteLine();
+    }
+
+    function removeTourStop(id) {
+      selectedTourStops = selectedTourStops.filter(x => x.id !== id);
+      renderTourStateList();
+      renderSelectedTourStops();
+      drawMarkersForStateTour();
+      drawRouteLine();
+    }
+
+    function clearTourPlan() {
+      selectedTourStops = [];
+      document.getElementById("tourDate").value = "";
+      document.getElementById("tourRemarks").value = "";
+      showTourMsg("");
+      renderTourStateList();
+      renderSelectedTourStops();
+      drawMarkersForStateTour();
+      clearRoute();
+    }
+
+    async function saveTourPlan() {
+      const state = document.getElementById("tourState").value;
+      const visit_date = document.getElementById("tourDate").value;
+      const remarks = document.getElementById("tourRemarks").value.trim();
+
+      if (!state) {
+        showTourMsg("Please select a state", true);
+        return;
+      }
+
+      if (!visit_date) {
+        showTourMsg("Please select a visit date", true);
+        return;
+      }
+
+      if (!selectedTourStops.length) {
+        showTourMsg("Please select at least one distributor", true);
+        return;
+      }
+
+      const payload = {
+        visit_date,
+        state,
+        remarks,
+        stops: selectedTourStops.map(r => ({
+          id: r.id,
+          distributor_name: r.distributor_name,
+          district: r.district,
+          address: r.address,
+          lat: r.lat,
+          lng: r.lng,
+          status: "Planned"
+        }))
+      };
+
+      try {
+        const res = await fetch("/api/tour-plans", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await res.json();
+
+        if (!res.ok) {
+          showTourMsg(data.error || "Tour save failed", true);
+          return;
+        }
+
+        showTourMsg(`Tour saved successfully. Stops saved: ${data.inserted}`);
+      } catch (e) {
+        showTourMsg("Tour save request failed", true);
       }
     }
 
@@ -690,6 +993,7 @@
       }).addTo(map);
 
       markerLayer = L.layerGroup().addTo(map);
+      routeLayer = L.layerGroup().addTo(map);
 
       map.on("click", async function (e) {
         const { lat, lng } = e.latlng;
@@ -698,6 +1002,28 @@
         const addr = await reverseGeocode(lat, lng);
         if (addr) document.getElementById("address").value = addr;
       });
+    }
+
+    function createOrMoveSelectedMarker(lat, lng) {
+      selectedLatLng = [lat, lng];
+      document.getElementById("lat").value = Number(lat).toFixed(6);
+      document.getElementById("lng").value = Number(lng).toFixed(6);
+
+      if (selectedMapMarker) {
+        selectedMapMarker.setLatLng([lat, lng]);
+      } else {
+        selectedMapMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+        selectedMapMarker.on("dragend", async function (ev) {
+          const pos = ev.target.getLatLng();
+          selectedLatLng = [pos.lat, pos.lng];
+          document.getElementById("lat").value = pos.lat.toFixed(6);
+          document.getElementById("lng").value = pos.lng.toFixed(6);
+
+          const addr = await reverseGeocode(pos.lat, pos.lng);
+          if (addr) document.getElementById("address").value = addr;
+        });
+      }
     }
 
     function drawMarkers() {
@@ -716,12 +1042,13 @@
         if (!coords) return;
 
         const isSelected = selectedId === r.id;
+        const isTourStop = selectedTourStops.some(x => x.id === r.id);
 
         const marker = L.circleMarker(coords, {
-          radius: isSelected ? 10 : 7,
-          color: isSelected ? "#b45309" : "#065f46",
+          radius: isSelected ? 10 : (isTourStop ? 9 : 7),
+          color: isSelected ? "#b45309" : (isTourStop ? "#1d4ed8" : "#065f46"),
           weight: isSelected ? 2 : 1,
-          fillColor: isSelected ? "#f59e0b" : "#16a34a",
+          fillColor: isSelected ? "#f59e0b" : (isTourStop ? "#3b82f6" : "#16a34a"),
           fillOpacity: 0.95
         });
 
@@ -736,14 +1063,21 @@
 
         marker.on("click", () => {
           selectedId = r.id;
-          renderTable();
-          drawMarkers();
+          if (document.getElementById("tourState").value &&
+              String(document.getElementById("tourState").value).toLowerCase() === String(r.state || "").toLowerCase()) {
+            toggleTourStop(r.id);
+          } else {
+            renderTable();
+            drawMarkers();
+          }
         });
 
         marker.addTo(markerLayer);
         markerMap[r.id] = marker;
         bounds.push(coords);
       });
+
+      drawRouteLine();
 
       if (selectedId && markerMap[selectedId]) {
         const marker = markerMap[selectedId];
@@ -753,6 +1087,51 @@
         map.fitBounds(bounds, { padding: [30, 30] });
       } else {
         map.setView([22.9734, 78.6569], 5);
+      }
+    }
+
+    function drawMarkersForStateTour() {
+      renderTable();
+      drawMarkers();
+    }
+
+    function clearRoute() {
+      if (routeLayer) routeLayer.clearLayers();
+    }
+
+    function drawRouteLine() {
+      clearRoute();
+      if (!routeLayer) return;
+
+      const points = selectedTourStops
+        .map(r => {
+          if (r.lat && r.lng) return [parseFloat(r.lat), parseFloat(r.lng)];
+          return districtCoords[normalizeDistrict(r.district)];
+        })
+        .filter(Boolean);
+
+      if (points.length >= 2) {
+        L.polyline(points, {
+          color: "#2563eb",
+          weight: 4,
+          opacity: 0.85
+        }).addTo(routeLayer);
+      }
+
+      points.forEach((pt, idx) => {
+        L.circleMarker(pt, {
+          radius: 11,
+          color: "#1e3a8a",
+          weight: 2,
+          fillColor: "#2563eb",
+          fillOpacity: 0.95
+        })
+          .addTo(routeLayer)
+          .bindTooltip(`Stop ${idx + 1}`, { permanent: true, direction: "top" });
+      });
+
+      if (points.length > 0) {
+        map.fitBounds(points, { padding: [40, 40] });
       }
     }
 
