@@ -76,6 +76,7 @@
     }
 
     input,
+    textarea,
     button {
       width: 100%;
       box-sizing: border-box;
@@ -84,6 +85,12 @@
       border: 1px solid #cfd5d1;
       font-size: 16px;
       margin-bottom: 14px;
+    }
+
+    textarea {
+      min-height: 90px;
+      resize: vertical;
+      font-family: Arial, sans-serif;
     }
 
     button {
@@ -136,7 +143,7 @@
 
     .grid-2 {
       display: grid;
-      grid-template-columns: 420px 1fr;
+      grid-template-columns: 460px 1fr;
       gap: 20px;
       align-items: start;
     }
@@ -223,6 +230,13 @@
       margin-top: 10px;
       font-size: 13px;
       color: #555;
+      line-height: 1.5;
+    }
+
+    .coord-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
     }
 
     @media (max-width: 1100px) {
@@ -269,6 +283,12 @@
           <input id="name" placeholder="Distributor Name" />
           <input id="mobile" placeholder="Mobile" />
           <input id="email" placeholder="Email" />
+          <textarea id="address" placeholder="Full Address"></textarea>
+
+          <div class="coord-grid">
+            <input id="lat" placeholder="Latitude" readonly />
+            <input id="lng" placeholder="Longitude" readonly />
+          </div>
 
           <div class="row-btns">
             <button onclick="saveDistributor()">Save</button>
@@ -315,7 +335,7 @@
             <h3>India Map</h3>
             <div id="map"></div>
             <div class="map-note">
-              Click a table row to highlight that distributor on the map. Map auto-zooms to visible distributors.
+              Click anywhere on the map to choose an exact location. A draggable marker will be placed there, latitude/longitude will fill automatically, and the address will be reverse-geocoded when possible.
             </div>
           </div>
         </div>
@@ -332,6 +352,8 @@
     let markerLayer;
     let selectedId = null;
     let markerMap = {};
+    let selectedMapMarker = null;
+    let selectedLatLng = null;
 
     const districtCoords = {
       "CHENNAI": [13.0827, 80.2707],
@@ -461,7 +483,8 @@
         (r.district || "").toLowerCase().includes(q) ||
         (r.distributor_name || "").toLowerCase().includes(q) ||
         (r.mobile || "").toLowerCase().includes(q) ||
-        (r.email || "").toLowerCase().includes(q)
+        (r.email || "").toLowerCase().includes(q) ||
+        (r.address || "").toLowerCase().includes(q)
       );
 
       filteredRows.forEach(r => {
@@ -486,6 +509,43 @@
       });
     }
 
+    async function reverseGeocode(lat, lng) {
+      try {
+        const res = await fetch(
+          "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" +
+          encodeURIComponent(lat) +
+          "&lon=" +
+          encodeURIComponent(lng)
+        );
+        const data = await res.json();
+        return data.display_name || "";
+      } catch (e) {
+        return "";
+      }
+    }
+
+    function createOrMoveSelectedMarker(lat, lng) {
+      selectedLatLng = [lat, lng];
+      document.getElementById("lat").value = Number(lat).toFixed(6);
+      document.getElementById("lng").value = Number(lng).toFixed(6);
+
+      if (selectedMapMarker) {
+        selectedMapMarker.setLatLng([lat, lng]);
+      } else {
+        selectedMapMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
+
+        selectedMapMarker.on("dragend", async function (ev) {
+          const pos = ev.target.getLatLng();
+          selectedLatLng = [pos.lat, pos.lng];
+          document.getElementById("lat").value = pos.lat.toFixed(6);
+          document.getElementById("lng").value = pos.lng.toFixed(6);
+
+          const addr = await reverseGeocode(pos.lat, pos.lng);
+          if (addr) document.getElementById("address").value = addr;
+        });
+      }
+    }
+
     function editRow(id) {
       const r = allRows.find(x => x.id === id);
       if (!r) return;
@@ -496,6 +556,16 @@
       document.getElementById("name").value = r.distributor_name || "";
       document.getElementById("mobile").value = r.mobile || "";
       document.getElementById("email").value = r.email || "";
+      document.getElementById("address").value = r.address || "";
+      document.getElementById("lat").value = r.lat || "";
+      document.getElementById("lng").value = r.lng || "";
+
+      if (r.lat && r.lng && map) {
+        const lat = parseFloat(r.lat);
+        const lng = parseFloat(r.lng);
+        createOrMoveSelectedMarker(lat, lng);
+        map.setView([lat, lng], 10);
+      }
 
       showSaveMsg("Edit mode loaded");
       window.scrollTo({ top: 0, behavior: "smooth" });
@@ -508,8 +578,18 @@
       document.getElementById("name").value = "";
       document.getElementById("mobile").value = "";
       document.getElementById("email").value = "";
+      document.getElementById("address").value = "";
+      document.getElementById("lat").value = "";
+      document.getElementById("lng").value = "";
       showSaveMsg("");
       selectedId = null;
+      selectedLatLng = null;
+
+      if (selectedMapMarker && map) {
+        map.removeLayer(selectedMapMarker);
+        selectedMapMarker = null;
+      }
+
       renderTable();
       drawMarkers();
     }
@@ -522,7 +602,10 @@
         district: document.getElementById("district").value.trim(),
         distributor_name: document.getElementById("name").value.trim(),
         mobile: document.getElementById("mobile").value.trim(),
-        email: document.getElementById("email").value.trim()
+        email: document.getElementById("email").value.trim(),
+        address: document.getElementById("address").value.trim(),
+        lat: document.getElementById("lat").value.trim(),
+        lng: document.getElementById("lng").value.trim()
       };
 
       try {
@@ -611,6 +694,15 @@
       }).addTo(map);
 
       markerLayer = L.layerGroup().addTo(map);
+
+      map.on("click", async function (e) {
+        const { lat, lng } = e.latlng;
+
+        createOrMoveSelectedMarker(lat, lng);
+
+        const addr = await reverseGeocode(lat, lng);
+        if (addr) document.getElementById("address").value = addr;
+      });
     }
 
     function drawMarkers() {
@@ -622,7 +714,10 @@
       const bounds = [];
 
       filteredRows.forEach(r => {
-        const coords = districtCoords[normalizeDistrict(r.district)];
+        const coords = (r.lat && r.lng)
+          ? [parseFloat(r.lat), parseFloat(r.lng)]
+          : districtCoords[normalizeDistrict(r.district)];
+
         if (!coords) return;
 
         const isSelected = selectedId === r.id;
@@ -640,7 +735,8 @@
           State: ${r.state || ""}<br>
           District: ${r.district || ""}<br>
           Mobile: ${r.mobile || ""}<br>
-          Email: ${r.email || ""}
+          Email: ${r.email || ""}<br>
+          Address: ${r.address || ""}
         `);
 
         marker.on("click", () => {
@@ -673,3 +769,7 @@
   </script>
 </body>
 </html>
+ 
+
+
+      
