@@ -523,7 +523,7 @@
             <h3>India Map + Route</h3>
             <div id="map"></div>
             <div class="map-note">
-              Click anywhere on the map to set exact distributor location. In Business Tour mode, selecting distributors will generate a road-style route using OSRM. Saved tours can also be loaded date-wise and marked as visited.
+              Click anywhere on the map to set exact distributor location. In Business Tour mode, selecting distributors will generate a road-style route. Saved tours can also be loaded date-wise and marked as visited.
             </div>
           </div>
         </div>
@@ -1111,7 +1111,7 @@
         `).join("");
 
         showSavedTourMsg(`Loaded ${rows.length} saved stop(s)`);
-        drawSavedTourRoute(rows);
+        await drawSavedTourRoute(rows);
       } catch (e) {
         showSavedTourMsg("Could not load saved tours", true);
       }
