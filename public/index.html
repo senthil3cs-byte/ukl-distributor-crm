@@ -19,7 +19,7 @@
     }
 
     .hidden {
-      display: none;
+      display: none !important;
     }
 
     .login-wrap {
@@ -39,8 +39,16 @@
     }
 
     .login-card {
-      width: 420px;
+      width: 440px;
       padding: 28px;
+      text-align: center;
+    }
+
+    .login-logo {
+      width: 120px;
+      height: auto;
+      margin: 0 auto 14px;
+      display: block;
     }
 
     .layout {
@@ -56,6 +64,22 @@
       align-items: center;
       margin-bottom: 18px;
       gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .brand-logo {
+      width: 70px;
+      height: auto;
+      border-radius: 8px;
+      background: #fff;
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
     }
 
     h1 {
@@ -253,6 +277,7 @@
 <body>
   <div id="loginView" class="login-wrap">
     <div class="login-card">
+      <img src="/logo.jpeg" alt="UKL Logo" class="login-logo" />
       <h1>UKL Distributor CRM</h1>
       <p class="sub">Login to continue</p>
 
@@ -269,7 +294,14 @@
   <div id="appView" class="hidden">
     <div class="layout">
       <div class="topbar">
-        <h1>UKL Distributor CRM</h1>
+        <div class="brand">
+          <img src="/logo.jpeg" alt="UKL Logo" class="brand-logo" />
+          <div>
+            <h1>UKL Distributor CRM</h1>
+            <div style="color:#0f6b3a;font-size:14px;">UKL Instruments Pvt Ltd</div>
+          </div>
+        </div>
+
         <button style="width:auto;padding:10px 16px;" onclick="logout()">Logout</button>
       </div>
 
@@ -310,7 +342,6 @@
 
           <div class="card">
             <h3>Distributor List</h3>
-
             <input id="search" placeholder="Search..." oninput="renderTable()" />
 
             <div class="table-wrap">
@@ -335,7 +366,7 @@
             <h3>India Map</h3>
             <div id="map"></div>
             <div class="map-note">
-              Click anywhere on the map to choose an exact location. A draggable marker will be placed there, latitude/longitude will fill automatically, and the address will be reverse-geocoded when possible.
+              Click anywhere on the map to choose an exact location. A draggable marker will be placed there and coordinates will be filled automatically.
             </div>
           </div>
         </div>
@@ -368,48 +399,10 @@
       "THANJAVUR": [10.7867, 79.1378],
       "TIRUNELVELI": [8.7139, 77.7567],
       "THOOTHUKUDI": [8.7642, 78.1348],
-      "THIRUVANANTHAPURAM": [8.5241, 76.9366],
-      "KOCHI": [9.9312, 76.2673],
       "BENGALURU": [12.9716, 77.5946],
-      "BANGALORE": [12.9716, 77.5946],
       "HYDERABAD": [17.3850, 78.4867],
       "MUMBAI": [19.0760, 72.8777],
-      "PUNE": [18.5204, 73.8567],
-      "DELHI": [28.6139, 77.2090],
-      "KOLKATA": [22.5726, 88.3639],
-      "AHMEDABAD": [23.0225, 72.5714],
-      "JAIPUR": [26.9124, 75.7873],
-      "LUCKNOW": [26.8467, 80.9462],
-      "PATNA": [25.5941, 85.1376],
-      "BHOPAL": [23.2599, 77.4126],
-      "NAGPUR": [21.1458, 79.0882],
-      "VISAKHAPATNAM": [17.6868, 83.2185],
-      "VIJAYAWADA": [16.5062, 80.6480],
-      "RAIPUR": [21.2514, 81.6296],
-      "BHUBANESWAR": [20.2961, 85.8245],
-      "RANCHI": [23.3441, 85.3096],
-      "SURAT": [21.1702, 72.8311],
-      "INDORE": [22.7196, 75.8577],
-      "GUWAHATI": [26.1445, 91.7362],
-      "NOIDA": [28.5355, 77.3910],
-      "GURUGRAM": [28.4595, 77.0266],
-      "CHANDIGARH": [30.7333, 76.7794],
-      "AMRITSAR": [31.6340, 74.8723],
-      "JODHPUR": [26.2389, 73.0243],
-      "UDAIPUR": [24.5854, 73.7125],
-      "KANPUR": [26.4499, 80.3319],
-      "VARANASI": [25.3176, 82.9739],
-      "AGRA": [27.1767, 78.0081],
-      "MYSURU": [12.2958, 76.6394],
-      "MANGALURU": [12.9141, 74.8560],
-      "NASHIK": [19.9975, 73.7898],
-      "AURANGABAD": [19.8762, 75.3433],
-      "VADODARA": [22.3072, 73.1812],
-      "RAJKOT": [22.3039, 70.8022],
-      "JAMNAGAR": [22.4707, 70.0577],
-      "DEHRADUN": [30.3165, 78.0322],
-      "SRINAGAR": [34.0837, 74.7973],
-      "JAMMU": [32.7266, 74.8570]
+      "DELHI": [28.6139, 77.2090]
     };
 
     function normalizeDistrict(name) {
@@ -463,7 +456,10 @@
     }
 
     function logout() {
-      location.reload();
+      document.getElementById("appView").classList.add("hidden");
+      document.getElementById("loginView").classList.remove("hidden");
+      document.getElementById("password").value = "";
+      showLoginError("");
     }
 
     async function loadRows() {
@@ -697,7 +693,6 @@
 
       map.on("click", async function (e) {
         const { lat, lng } = e.latlng;
-
         createOrMoveSelectedMarker(lat, lng);
 
         const addr = await reverseGeocode(lat, lng);
@@ -769,7 +764,3 @@
   </script>
 </body>
 </html>
- 
-
-
-      
