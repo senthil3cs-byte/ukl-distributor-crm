@@ -37,24 +37,31 @@ db.serialize(() => {
     )
   `);
 
-  // Safe add if older DB existed before these fields
+  db.run(`
+    CREATE TABLE IF NOT EXISTS tour_plans (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      visit_date TEXT,
+      state TEXT,
+      distributor_id INTEGER,
+      distributor_name TEXT,
+      district TEXT,
+      address TEXT,
+      lat REAL,
+      lng REAL,
+      status TEXT DEFAULT 'Planned',
+      remarks TEXT,
+      created_at TEXT DEFAULT CURRENT_TIMESTAMP
+    )
+  `);
+
   db.all(`PRAGMA table_info(distributors)`, [], (err, rows) => {
     if (err) return;
-
     const cols = rows.map(r => r.name.toLowerCase());
 
-    if (!cols.includes("address")) {
-      db.run(`ALTER TABLE distributors ADD COLUMN address TEXT`);
-    }
-    if (!cols.includes("lat")) {
-      db.run(`ALTER TABLE distributors ADD COLUMN lat REAL`);
-    }
-    if (!cols.includes("lng")) {
-      db.run(`ALTER TABLE distributors ADD COLUMN lng REAL`);
-    }
-    if (!cols.includes("updated_at")) {
-      db.run(`ALTER TABLE distributors ADD COLUMN updated_at TEXT`);
-    }
+    if (!cols.includes("address")) db.run(`ALTER TABLE distributors ADD COLUMN address TEXT`);
+    if (!cols.includes("lat")) db.run(`ALTER TABLE distributors ADD COLUMN lat REAL`);
+    if (!cols.includes("lng")) db.run(`ALTER TABLE distributors ADD COLUMN lng REAL`);
+    if (!cols.includes("updated_at")) db.run(`ALTER TABLE distributors ADD COLUMN updated_at TEXT`);
   });
 });
 
@@ -78,7 +85,7 @@ app.post("/api/login", (req, res) => {
   return res.status(401).json({ success: false, message: "Invalid login" });
 });
 
-// ===== GET ALL =====
+// ===== DISTRIBUTORS =====
 app.get("/api/distributors", (req, res) => {
   db.all(
     `SELECT * FROM distributors ORDER BY id DESC`,
@@ -90,7 +97,28 @@ app.get("/api/distributors", (req, res) => {
   );
 });
 
-// ===== ADD =====
+app.get("/api/states", (req, res) => {
+  db.all(
+    `SELECT DISTINCT state FROM distributors WHERE TRIM(IFNULL(state,'')) <> '' ORDER BY state`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows.map(r => r.state));
+    }
+  );
+});
+
+app.get("/api/distributors/by-state/:state", (req, res) => {
+  db.all(
+    `SELECT * FROM distributors WHERE LOWER(state) = LOWER(?) ORDER BY distributor_name`,
+    [req.params.state],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
 app.post("/api/distributors", (req, res) => {
   const {
     state,
@@ -104,9 +132,7 @@ app.post("/api/distributors", (req, res) => {
   } = req.body || {};
 
   if (!norm(district) || !norm(distributor_name)) {
-    return res
-      .status(400)
-      .json({ error: "District and Distributor Name are required" });
+    return res.status(400).json({ error: "District and Distributor Name are required" });
   }
 
   db.run(
@@ -130,7 +156,6 @@ app.post("/api/distributors", (req, res) => {
   );
 });
 
-// ===== EDIT =====
 app.put("/api/distributors/:id", (req, res) => {
   const {
     state,
@@ -144,9 +169,7 @@ app.put("/api/distributors/:id", (req, res) => {
   } = req.body || {};
 
   if (!norm(district) || !norm(distributor_name)) {
-    return res
-      .status(400)
-      .json({ error: "District and Distributor Name are required" });
+    return res.status(400).json({ error: "District and Distributor Name are required" });
   }
 
   db.run(
@@ -179,7 +202,6 @@ app.put("/api/distributors/:id", (req, res) => {
   );
 });
 
-// ===== DELETE =====
 app.delete("/api/distributors/:id", (req, res) => {
   db.run(
     `DELETE FROM distributors WHERE id = ?`,
@@ -199,7 +221,10 @@ app.post("/api/import-excel", upload.single("file"), (req, res) => {
     }
 
     const workbook = XLSX.readFile(req.file.path);
-    const sheetName = workbook.SheetNames[0];
+    const sheetName = workbook.SheetNames.includes("Upload_Template")
+      ? "Upload_Template"
+      : workbook.SheetNames[0];
+
     const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], {
       defval: ""
     });
@@ -220,26 +245,28 @@ app.post("/api/import-excel", upload.single("file"), (req, res) => {
       });
 
       const state = norm(lowered["state"] || lowered["state name"] || lowered["st"]);
-      const district = norm(
-        lowered["district"] || lowered["district name"] || lowered["districts"]
-      );
+      const district = norm(lowered["district"] || lowered["district name"] || lowered["districts"]);
       const distributor = norm(
         lowered["distributor"] ||
-          lowered["distributor name"] ||
-          lowered["name"] ||
-          lowered["dealer"]
+        lowered["distributor name"] ||
+        lowered["name"] ||
+        lowered["dealer"]
       );
       const mobile = norm(
         lowered["mobile"] ||
-          lowered["mobile no"] ||
-          lowered["phone"] ||
-          lowered["contact"]
+        lowered["mobile no"] ||
+        lowered["phone"] ||
+        lowered["contact"]
       );
       const email = norm(
-        lowered["email"] || lowered["email id"] || lowered["mail id"]
+        lowered["email"] ||
+        lowered["email id"] ||
+        lowered["mail id"]
       );
       const address = norm(
-        lowered["address"] || lowered["full address"] || lowered["location"]
+        lowered["address"] ||
+        lowered["full address"] ||
+        lowered["location"]
       );
       const lat = numOrNull(lowered["lat"] || lowered["latitude"]);
       const lng = numOrNull(lowered["lng"] || lowered["longitude"]);
@@ -267,6 +294,81 @@ app.post("/api/import-excel", upload.single("file"), (req, res) => {
     if (req.file?.path) fs.unlink(req.file.path, () => {});
     res.status(500).json({ error: e.message });
   }
+});
+
+// ===== TOUR PLANS =====
+app.post("/api/tour-plans", (req, res) => {
+  const { visit_date, state, remarks, stops } = req.body || {};
+
+  if (!norm(visit_date) || !norm(state) || !Array.isArray(stops) || stops.length === 0) {
+    return res.status(400).json({ error: "Visit date, state, and selected distributors are required" });
+  }
+
+  const stmt = db.prepare(`
+    INSERT INTO tour_plans
+    (visit_date, state, distributor_id, distributor_name, district, address, lat, lng, status, remarks, created_at)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now'))
+  `);
+
+  let inserted = 0;
+
+  for (const stop of stops) {
+    stmt.run(
+      norm(visit_date),
+      norm(state),
+      stop.id || null,
+      norm(stop.distributor_name),
+      norm(stop.district),
+      norm(stop.address),
+      numOrNull(stop.lat),
+      numOrNull(stop.lng),
+      norm(stop.status || "Planned"),
+      norm(remarks)
+    );
+    inserted++;
+  }
+
+  stmt.finalize(err => {
+    if (err) return res.status(500).json({ error: err.message });
+    res.json({ success: true, inserted });
+  });
+});
+
+app.get("/api/tour-plans", (req, res) => {
+  db.all(
+    `SELECT * FROM tour_plans ORDER BY visit_date DESC, id DESC`,
+    [],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+app.get("/api/tour-plans/:visit_date", (req, res) => {
+  db.all(
+    `SELECT * FROM tour_plans WHERE visit_date = ? ORDER BY id`,
+    [req.params.visit_date],
+    (err, rows) => {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json(rows);
+    }
+  );
+});
+
+app.put("/api/tour-plans/status/:id", (req, res) => {
+  const { status, remarks } = req.body || {};
+
+  db.run(
+    `UPDATE tour_plans
+     SET status = ?, remarks = COALESCE(?, remarks)
+     WHERE id = ?`,
+    [norm(status || "Planned"), norm(remarks), req.params.id],
+    function (err) {
+      if (err) return res.status(500).json({ error: err.message });
+      res.json({ success: true, changes: this.changes });
+    }
+  );
 });
 
 // ===== FRONTEND =====
