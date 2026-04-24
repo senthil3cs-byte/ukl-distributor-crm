@@ -1,1325 +1,163 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>GeoCRM</title>
+<meta charset="UTF-8">
+<title>GeoCRM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
-  <style>
-    body {
-      margin: 0;
-      font-family: Arial, sans-serif;
-      background: linear-gradient(135deg, #eef5ef, #ffffff);
-      min-height: 100vh;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    .login-wrap {
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      padding: 16px 20px 20px;
-      box-sizing: border-box;
-      flex-direction: column;
-    }
-
-    .login-card,
-    .card {
-      background: #fff;
-      border-radius: 18px;
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.08);
-    }
-
-    .login-card {
-      width: 380px;
-      padding: 28px;
-      text-align: center;
-    }
-
-    .login-brand {
-      text-align: center;
-      margin-bottom: 4px;
-      position: relative;
-    }
-
-    .login-brand::before {
-      content: "";
-      position: absolute;
-      left: 50%;
-      top: 48%;
-      transform: translate(-50%, -50%);
-      width: 430px;
-      height: 220px;
-      background: radial-gradient(circle, rgba(132, 186, 73, 0.25) 0%, rgba(132, 186, 73, 0.10) 45%, rgba(255,255,255,0) 75%);
-      filter: blur(10px);
-      z-index: 0;
-      pointer-events: none;
-    }
-
-    .login-logo {
-      position: relative;
-      z-index: 1;
-      width: 720px;
-      max-width: 95vw;
-      height: auto;
-      margin: 0 auto 4px;
-      display: block;
-      filter: drop-shadow(0 0 18px rgba(120, 190, 70, 0.28));
-    }
-
-    .layout {
-      max-width: 1540px;
-      margin: 24px auto;
-      padding: 0 16px 24px;
-      box-sizing: border-box;
-    }
-
-    .topbar {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 18px;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-
-    .brand {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-    }
-
-    .brand-logo {
-      width: 100px;
-      height: auto;
-      border-radius: 10px;
-      background: #fff;
-      padding: 4px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    }
-
-    h1 {
-      margin: 0 0 6px;
-      color: #0f6b3a;
-      font-size: 28px;
-    }
-
-    h3 {
-      margin-top: 0;
-      margin-bottom: 14px;
-      font-size: 18px;
-      color: #0f6b3a;
-    }
-
-    input,
-    textarea,
-    button,
-    select {
-      width: 100%;
-      box-sizing: border-box;
-      padding: 14px;
-      border-radius: 12px;
-      border: 1px solid #cfd5d1;
-      font-size: 16px;
-      margin-bottom: 14px;
-      background: #fff;
-    }
-
-    textarea {
-      min-height: 90px;
-      resize: vertical;
-      font-family: Arial, sans-serif;
-    }
-
-    button {
-      background: linear-gradient(to right, #0d47a1, #2e7d32);
-      color: #fff;
-      border: none;
-      font-weight: 700;
-      cursor: pointer;
-    }
-
-    button:hover {
-      opacity: 0.92;
-    }
-
-    .small-btn {
-      width: auto;
-      padding: 8px 10px;
-      margin: 0 6px 0 0;
-      border-radius: 8px;
-      font-size: 13px;
-    }
-
-    .edit-btn {
-      background: #f59e0b;
-    }
-
-    .delete-btn {
-      background: #dc2626;
-    }
-
-    .secondary-btn {
-      background: #6b7280;
-    }
-
-    .blue-btn {
-      background: #2563eb;
-    }
-
-    .err {
-      color: #d93025;
-      margin-top: 8px;
-    }
-
-    .msg {
-      margin-top: 8px;
-      font-size: 14px;
-      color: #0b6b37;
-    }
-
-    .grid-main {
-      display: grid;
-      grid-template-columns: 470px 1fr;
-      gap: 20px;
-      align-items: start;
-    }
-
-    .left-grid,
-    .right-grid {
-      display: flex;
-      flex-direction: column;
-      gap: 20px;
-    }
-
-    .card {
-      padding: 18px;
-    }
-
-    .row-btns {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .row-btns button {
-      flex: 1;
-      min-width: 140px;
-    }
-
-    .top-actions {
-      display: flex;
-      gap: 10px;
-      flex-wrap: wrap;
-      margin-bottom: 12px;
-    }
-
-    .top-actions input[type="file"] {
-      background: #fff;
-      padding: 10px;
-      margin: 0;
-      flex: 1;
-      min-width: 220px;
-    }
-
-    .top-actions button {
-      width: auto;
-      margin: 0;
-      padding: 12px 16px;
-    }
-
-    .table-wrap {
-      overflow-x: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      font-size: 14px;
-    }
-
-    th,
-    td {
-      border: 1px solid #dfe5e1;
-      padding: 10px;
-      text-align: left;
-      vertical-align: top;
-    }
-
-    th {
-      background: #e8f4ec;
-      color: #0f6b3a;
-    }
-
-    tr.active-row {
-      background: #fff7d6;
-    }
-
-    #map {
-      width: 100%;
-      height: 720px;
-      border-radius: 14px;
-      overflow: hidden;
-      border: 1px solid #d6ded8;
-    }
-
-    .map-note {
-      margin-top: 10px;
-      font-size: 13px;
-      color: #555;
-      line-height: 1.5;
-    }
-
-    .coord-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-
-    .tour-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 14px;
-      align-items: start;
-    }
-
-    .tour-selected-list,
-    .tour-state-list,
-    .saved-tour-list {
-      max-height: 300px;
-      overflow: auto;
-      border: 1px solid #dfe5e1;
-      border-radius: 12px;
-      padding: 10px;
-      background: #fafcfa;
-    }
-
-    .tour-item {
-      border: 1px solid #d9e3dc;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      background: #fff;
-    }
-
-    .tour-item.selected {
-      background: #e9f8ee;
-      border-color: #16a34a;
-    }
-
-    .tour-badge {
-      display: inline-block;
-      background: #148a3b;
-      color: #fff;
-      border-radius: 999px;
-      padding: 2px 8px;
-      font-size: 12px;
-      margin-left: 6px;
-    }
-
-    .tour-stop {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      padding: 8px 10px;
-      border-bottom: 1px solid #e5ece7;
-      font-size: 14px;
-    }
-
-    .tour-stop:last-child {
-      border-bottom: none;
-    }
-
-    .remove-stop {
-      width: auto;
-      margin: 0;
-      padding: 6px 10px;
-      font-size: 12px;
-      background: #dc2626;
-      border-radius: 8px;
-    }
-
-    .saved-tour-item {
-      border: 1px solid #d9e3dc;
-      border-radius: 10px;
-      padding: 10px;
-      margin-bottom: 10px;
-      background: #fff;
-    }
-
-    .saved-tour-head {
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      align-items: center;
-      flex-wrap: wrap;
-    }
-
-    .status-badge {
-      display: inline-block;
-      padding: 4px 10px;
-      border-radius: 999px;
-      font-size: 12px;
-      font-weight: 700;
-    }
-
-    .status-planned {
-      background: #fef3c7;
-      color: #92400e;
-    }
-
-    .status-visited {
-      background: #dcfce7;
-      color: #166534;
-    }
-
-    .status-cancelled {
-      background: #fee2e2;
-      color: #991b1b;
-    }
-
-    @media (max-width: 1200px) {
-      .grid-main {
-        grid-template-columns: 1fr;
-      }
-
-      .tour-grid {
-        grid-template-columns: 1fr;
-      }
-
-      #map {
-        height: 520px;
-      }
-
-      .login-logo {
-        width: 360px;
-      }
-
-      .login-brand::before {
-        width: 360px;
-        height: 200px;
-      }
-    }
-  </style>
+<style>
+body{font-family:Arial;margin:0;background:#eef5ef;}
+.card{background:#fff;padding:18px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.08);}
+.row-btns{display:flex;gap:10px;margin-bottom:10px;}
+button{padding:10px;border:none;border-radius:8px;background:#2e7d32;color:#fff;cursor:pointer;}
+.blue-btn{background:#2563eb;}
+.small-btn{padding:6px 10px;font-size:12px;}
+.edit-btn{background:#f59e0b;}
+.delete-btn{background:#dc2626;}
+input,select{padding:10px;border-radius:8px;border:1px solid #ccc;width:100%;}
+table{width:100%;border-collapse:collapse;}
+th,td{border:1px solid #ddd;padding:8px;}
+th{background:#e8f4ec;}
+#map{height:400px;border-radius:10px;margin-top:10px;}
+</style>
 </head>
+
 <body>
-  <div id="loginView" class="login-wrap">
-    <div class="login-brand">
-      <img src="/logo.png" alt="GeoCRM Logo" class="login-logo" />
-    </div>
 
-    <div class="login-card">
-      <h3 style="margin-top:0;color:#0f6b3a;">Welcome Back</h3>
-      <input id="username" placeholder="Username" />
-      <input id="password" type="password" placeholder="Password" />
-      <button onclick="login()">Login</button>
-      <div id="loginError" class="err"></div>
-    </div>
-  </div>
+<div style="max-width:1200px;margin:auto;padding:20px;">
+
+<div class="card">
+<h3>Distributor List</h3>
+
+<div class="row-btns">
+<select id="listState"></select>
+<button onclick="loadStatewiseList()">View</button>
+<button class="blue-btn" onclick="exportStatewiseExcel()">Export Excel</button>
+</div>
+
+<input id="search" placeholder="Search in selected state..." oninput="renderTable()" />
+
+<table>
+<thead>
+<tr>
+<th>ID</th><th>State</th><th>District</th><th>Name</th><th>Mobile</th><th>Email</th><th>Action</th>
+</tr>
+</thead>
+<tbody id="rows">
+<tr><td colspan="7" style="text-align:center;color:#666;">Select state and click View</td></tr>
+</tbody>
+</table>
+</div>
+
+<div class="card" style="margin-top:20px;">
+<h3>India Map</h3>
+<div id="map"></div>
+</div>
+
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+let allRows=[];
+let filteredRows=[];
+let selectedListState="";
+let map,markerLayer;
+
+async function loadRows(){
+const res=await fetch("/api/distributors");
+allRows=await res.json();
+fillStates();
+}
+
+function fillStates(){
+const ddl=document.getElementById("listState");
+const states=[...new Set(allRows.map(r=>r.state))];
+ddl.innerHTML='<option value="">Select State</option>'+states.map(s=>`<option>${s}</option>`).join("");
+}
+
+function loadStatewiseList(){
+selectedListState=document.getElementById("listState").value;
+renderTable();
+drawMarkers();
+}
+
+function renderTable(){
+const q=document.getElementById("search").value.toLowerCase();
+const tbody=document.getElementById("rows");
+tbody.innerHTML="";
+
+if(!selectedListState){
+tbody.innerHTML='<tr><td colspan="7">Select state and click View</td></tr>';
+return;
+}
+
+filteredRows=allRows.filter(r=>
+r.state===selectedListState &&
+(r.district||"").toLowerCase().includes(q) ||
+(r.distributor_name||"").toLowerCase().includes(q)
+);
+
+filteredRows.forEach(r=>{
+const tr=document.createElement("tr");
+tr.innerHTML=`
+<td>${r.id}</td>
+<td>${r.state}</td>
+<td>${r.district}</td>
+<td>${r.distributor_name}</td>
+<td>${r.mobile||""}</td>
+<td>${r.email||""}</td>
+<td>
+<button class="small-btn edit-btn">Edit</button>
+<button class="small-btn delete-btn">Delete</button>
+</td>`;
+tbody.appendChild(tr);
+});
+}
+
+function exportStatewiseExcel(){
+if(!selectedListState){alert("Select state first");return;}
+
+const rows=allRows.filter(r=>r.state===selectedListState);
+
+let csv="ID,State,District,Name,Mobile,Email,Address,Lat,Lng\n";
+
+rows.forEach(r=>{
+csv+=`${r.id},"${r.state}","${r.district}","${r.distributor_name}","${r.mobile||""}","${r.email||""}","${r.address||""}","${r.lat||""}","${r.lng||""}"\n`;
+});
 
-  <div id="appView" class="hidden">
-    <div class="layout">
-      <div class="topbar">
-        <div class="brand">
-          <img src="/logo.png" alt="GeoCRM Logo" class="brand-logo" />
-          <div>
-            <h1>GeoCRM</h1>
-            <div style="color:#0f6b3a;font-size:14px;">UKL Instruments Pvt Ltd</div>
-          </div>
-        </div>
+const blob=new Blob([csv],{type:"text/csv"});
+const link=document.createElement("a");
+link.href=URL.createObjectURL(blob);
+link.download=selectedListState+"_Distributors.csv";
+link.click();
+}
 
-        <button style="width:auto;padding:10px 16px;" onclick="logout()">Logout</button>
-      </div>
+function initMap(){
+map=L.map("map").setView([22.9734,78.6569],5);
 
-      <div class="grid-main">
-        <div class="left-grid">
-          <div class="card">
-            <h3>Add / Edit Distributor</h3>
+L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(map);
 
-            <input type="hidden" id="id" />
-            <input id="state" value="Tamil Nadu" placeholder="State" />
-            <input id="district" placeholder="District" />
-            <input id="name" placeholder="Distributor Name" />
-            <input id="mobile" placeholder="Mobile" />
-            <input id="email" placeholder="Email" />
-            <textarea id="address" placeholder="Full Address"></textarea>
+markerLayer=L.layerGroup().addTo(map);
+}
 
-            <div class="coord-grid">
-              <input id="lat" placeholder="Latitude" readonly />
-              <input id="lng" placeholder="Longitude" readonly />
-            </div>
+function drawMarkers(){
+markerLayer.clearLayers();
 
-            <div class="row-btns">
-              <button onclick="saveDistributor()">Save</button>
-              <button class="secondary-btn" type="button" onclick="clearForm()">Clear</button>
-            </div>
+filteredRows.forEach(r=>{
+if(r.lat && r.lng){
+L.marker([r.lat,r.lng]).addTo(markerLayer)
+.bindPopup(r.distributor_name);
+}
+});
+}
 
-            <div id="saveMsg" class="msg"></div>
-          </div>
+initMap();
+loadRows();
 
-          <div class="card">
-            <h3>Excel Upload</h3>
-            <div class="top-actions">
-              <input type="file" id="file" accept=".xlsx,.xls" />
-              <button onclick="uploadExcel()">Upload Excel</button>
-            </div>
-            <div id="uploadMsg" class="msg"></div>
-          </div>
+</script>
 
-          <div class="card">
-            <h3>Business Tour Planner</h3>
-
-            <select id="tourState"></select>
-            <input id="tourDate" type="date" />
-            <textarea id="tourRemarks" placeholder="Remarks / Purpose of visit"></textarea>
-
-            <div class="tour-grid">
-              <div>
-                <div style="font-weight:700;margin-bottom:8px;">Available Distributors in State</div>
-                <div id="tourStateList" class="tour-state-list"></div>
-              </div>
-
-              <div>
-                <div style="font-weight:700;margin-bottom:8px;">Selected Visit Stops</div>
-                <div id="tourSelectedList" class="tour-selected-list"></div>
-              </div>
-            </div>
-
-            <div class="row-btns" style="margin-top:14px;">
-              <button onclick="saveTourPlan()">Save Tour Plan</button>
-              <button class="secondary-btn" type="button" onclick="clearTourPlan()">Clear Tour</button>
-            </div>
-
-            <div id="tourMsg" class="msg"></div>
-          </div>
-
-          <div class="card">
-            <h3>Saved Tour Plans</h3>
-
-            <input id="viewTourDate" type="date" />
-            <div class="row-btns">
-              <button class="blue-btn" onclick="loadSavedTours()">Load Tours</button>
-            </div>
-
-            <div id="savedTourMsg" class="msg"></div>
-            <div id="savedTourList" class="saved-tour-list"></div>
-          </div>
-        </div>
-
-        <div class="right-grid">
-          <div class="card">
-            <h3>Distributor List</h3>
-            <input id="search" placeholder="Search..." oninput="renderTable()" />
-
-            <div class="table-wrap">
-              <table>
-                <thead>
-                  <tr>
-                    <th>ID</th>
-                    <th>State</th>
-                    <th>District</th>
-                    <th>Name</th>
-                    <th>Mobile</th>
-                    <th>Email</th>
-                    <th>Action</th>
-                  </tr>
-                </thead>
-                <tbody id="rows"></tbody>
-              </table>
-            </div>
-          </div>
-
-          <div class="card">
-            <h3>India Map + Route</h3>
-            <div id="map"></div>
-            <div class="map-note">
-              Click anywhere on the map to set exact distributor location. In Business Tour mode, selecting distributors creates a route line. Saved tours can be loaded date-wise and marked as visited.
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-  <script>
-    let allRows = [];
-    let filteredRows = [];
-    let map;
-    let markerLayer;
-    let routeLayer;
-    let selectedId = null;
-    let markerMap = {};
-    let selectedMapMarker = null;
-    let selectedLatLng = null;
-
-    let statesList = [];
-    let stateDistributors = [];
-    let selectedTourStops = [];
-
-    const districtCoords = {
-      "CHENNAI": [13.0827, 80.2707],
-      "COIMBATORE": [11.0168, 76.9558],
-      "MADURAI": [9.9252, 78.1198],
-      "TIRUPPUR": [11.1085, 77.3411],
-      "SALEM": [11.6643, 78.1460],
-      "ERODE": [11.3410, 77.7172],
-      "TRICHY": [10.7905, 78.7047],
-      "TIRUCHIRAPPALLI": [10.7905, 78.7047],
-      "VELLORE": [12.9165, 79.1325],
-      "THANJAVUR": [10.7867, 79.1378],
-      "TIRUNELVELI": [8.7139, 77.7567],
-      "THOOTHUKUDI": [8.7642, 78.1348],
-      "BENGALURU": [12.9716, 77.5946],
-      "HYDERABAD": [17.3850, 78.4867],
-      "MUMBAI": [19.0760, 72.8777],
-      "DELHI": [28.6139, 77.2090],
-      "PUNE": [18.5204, 73.8567]
-    };
-
-    function normalizeDistrict(name) {
-      return String(name || "").trim().toUpperCase();
-    }
-
-    function showLoginError(text) {
-      document.getElementById("loginError").textContent = text || "";
-    }
-
-    function showSaveMsg(text, isError = false) {
-      const el = document.getElementById("saveMsg");
-      el.textContent = text || "";
-      el.style.color = isError ? "#d93025" : "#0b6b37";
-    }
-
-    function showUploadMsg(text, isError = false) {
-      const el = document.getElementById("uploadMsg");
-      el.textContent = text || "";
-      el.style.color = isError ? "#d93025" : "#0b6b37";
-    }
-
-    function showTourMsg(text, isError = false) {
-      const el = document.getElementById("tourMsg");
-      el.textContent = text || "";
-      el.style.color = isError ? "#d93025" : "#0b6b37";
-    }
-
-    function showSavedTourMsg(text, isError = false) {
-      const el = document.getElementById("savedTourMsg");
-      el.textContent = text || "";
-      el.style.color = isError ? "#d93025" : "#0b6b37";
-    }
-
-    async function login() {
-      showLoginError("");
-
-      try {
-        const res = await fetch("/api/login", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            username: document.getElementById("username").value.trim(),
-            password: document.getElementById("password").value.trim()
-          })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok || !data.success) {
-          showLoginError(data.message || "Invalid login");
-          return;
-        }
-
-        document.getElementById("loginView").classList.add("hidden");
-        document.getElementById("appView").classList.remove("hidden");
-
-        initMap();
-        await loadRows();
-        await loadStates();
-      } catch (e) {
-        showLoginError("Login request failed");
-      }
-    }
-
-    function logout() {
-      document.getElementById("appView").classList.add("hidden");
-      document.getElementById("loginView").classList.remove("hidden");
-      document.getElementById("password").value = "";
-      showLoginError("");
-    }
-
-    async function loadRows() {
-      const res = await fetch("/api/distributors");
-      allRows = await res.json();
-      renderTable();
-      drawMarkers();
-    }
-
-    function renderTable() {
-      const q = document.getElementById("search").value.toLowerCase();
-      const tbody = document.getElementById("rows");
-      tbody.innerHTML = "";
-
-      filteredRows = allRows.filter(r =>
-        (r.state || "").toLowerCase().includes(q) ||
-        (r.district || "").toLowerCase().includes(q) ||
-        (r.distributor_name || "").toLowerCase().includes(q) ||
-        (r.mobile || "").toLowerCase().includes(q) ||
-        (r.email || "").toLowerCase().includes(q) ||
-        (r.address || "").toLowerCase().includes(q)
-      );
-
-      filteredRows.forEach(r => {
-        const tr = document.createElement("tr");
-        if (selectedId === r.id) tr.classList.add("active-row");
-
-        tr.innerHTML = `
-          <td>${r.id || ""}</td>
-          <td>${r.state || ""}</td>
-          <td>${r.district || ""}</td>
-          <td>${r.distributor_name || ""}</td>
-          <td>${r.mobile || ""}</td>
-          <td>${r.email || ""}</td>
-          <td>
-            <button class="small-btn edit-btn" onclick="event.stopPropagation(); editRow(${r.id})">Edit</button>
-            <button class="small-btn delete-btn" onclick="event.stopPropagation(); deleteRow(${r.id})">Delete</button>
-          </td>
-        `;
-
-        tr.onclick = () => focusDistributor(r.id);
-        tbody.appendChild(tr);
-      });
-    }
-
-    async function reverseGeocode(lat, lng) {
-      try {
-        const res = await fetch(
-          "https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=" +
-          encodeURIComponent(lat) +
-          "&lon=" +
-          encodeURIComponent(lng)
-        );
-        const data = await res.json();
-        return data.display_name || "";
-      } catch (e) {
-        return "";
-      }
-    }
-
-    function createOrMoveSelectedMarker(lat, lng) {
-      selectedLatLng = [lat, lng];
-      document.getElementById("lat").value = Number(lat).toFixed(6);
-      document.getElementById("lng").value = Number(lng).toFixed(6);
-
-      if (selectedMapMarker) {
-        selectedMapMarker.setLatLng([lat, lng]);
-      } else {
-        selectedMapMarker = L.marker([lat, lng], { draggable: true }).addTo(map);
-
-        selectedMapMarker.on("dragend", async function (ev) {
-          const pos = ev.target.getLatLng();
-          selectedLatLng = [pos.lat, pos.lng];
-          document.getElementById("lat").value = pos.lat.toFixed(6);
-          document.getElementById("lng").value = pos.lng.toFixed(6);
-
-          const addr = await reverseGeocode(pos.lat, pos.lng);
-          if (addr) document.getElementById("address").value = addr;
-        });
-      }
-    }
-
-    function editRow(id) {
-      const r = allRows.find(x => x.id === id);
-      if (!r) return;
-
-      document.getElementById("id").value = r.id || "";
-      document.getElementById("state").value = r.state || "";
-      document.getElementById("district").value = r.district || "";
-      document.getElementById("name").value = r.distributor_name || "";
-      document.getElementById("mobile").value = r.mobile || "";
-      document.getElementById("email").value = r.email || "";
-      document.getElementById("address").value = r.address || "";
-      document.getElementById("lat").value = r.lat || "";
-      document.getElementById("lng").value = r.lng || "";
-
-      if (r.lat && r.lng && map) {
-        const lat = parseFloat(r.lat);
-        const lng = parseFloat(r.lng);
-        createOrMoveSelectedMarker(lat, lng);
-        map.setView([lat, lng], 10);
-      }
-
-      showSaveMsg("Edit mode loaded");
-      window.scrollTo({ top: 0, behavior: "smooth" });
-    }
-
-    function clearForm() {
-      document.getElementById("id").value = "";
-      document.getElementById("state").value = "Tamil Nadu";
-      document.getElementById("district").value = "";
-      document.getElementById("name").value = "";
-      document.getElementById("mobile").value = "";
-      document.getElementById("email").value = "";
-      document.getElementById("address").value = "";
-      document.getElementById("lat").value = "";
-      document.getElementById("lng").value = "";
-      showSaveMsg("");
-      selectedId = null;
-      selectedLatLng = null;
-
-      if (selectedMapMarker && map) {
-        map.removeLayer(selectedMapMarker);
-        selectedMapMarker = null;
-      }
-
-      renderTable();
-      drawMarkers();
-    }
-
-    async function saveDistributor() {
-      const id = document.getElementById("id").value.trim();
-
-      const payload = {
-        state: document.getElementById("state").value.trim(),
-        district: document.getElementById("district").value.trim(),
-        distributor_name: document.getElementById("name").value.trim(),
-        mobile: document.getElementById("mobile").value.trim(),
-        email: document.getElementById("email").value.trim(),
-        address: document.getElementById("address").value.trim(),
-        lat: document.getElementById("lat").value.trim(),
-        lng: document.getElementById("lng").value.trim()
-      };
-
-      try {
-        const res = await fetch(id ? `/api/distributors/${id}` : "/api/distributors", {
-          method: id ? "PUT" : "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showSaveMsg(data.error || "Save failed", true);
-          return;
-        }
-
-        showSaveMsg(id ? "Updated successfully" : "Saved successfully");
-        clearForm();
-        await loadRows();
-        await loadStates();
-      } catch (e) {
-        showSaveMsg("Save request failed", true);
-      }
-    }
-
-    async function deleteRow(id) {
-      if (!confirm("Delete this record?")) return;
-
-      try {
-        const res = await fetch(`/api/distributors/${id}`, {
-          method: "DELETE"
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showSaveMsg(data.error || "Delete failed", true);
-          return;
-        }
-
-        showSaveMsg("Deleted successfully");
-        if (selectedId === id) selectedId = null;
-        await loadRows();
-        await loadStates();
-      } catch (e) {
-        showSaveMsg("Delete request failed", true);
-      }
-    }
-
-    async function uploadExcel() {
-      const file = document.getElementById("file").files[0];
-      if (!file) {
-        showUploadMsg("Please choose an Excel file first", true);
-        return;
-      }
-
-      const fd = new FormData();
-      fd.append("file", file);
-
-      try {
-        const res = await fetch("/api/import-excel", {
-          method: "POST",
-          body: fd
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showUploadMsg(data.error || "Upload failed", true);
-          return;
-        }
-
-        showUploadMsg(`Excel imported. Inserted: ${data.inserted}, Skipped: ${data.skipped}`);
-        document.getElementById("file").value = "";
-        await loadRows();
-        await loadStates();
-      } catch (e) {
-        showUploadMsg("Upload request failed", true);
-      }
-    }
-
-    async function loadStates() {
-      try {
-        const res = await fetch("/api/states");
-        statesList = await res.json();
-
-        const ddl = document.getElementById("tourState");
-        ddl.innerHTML = `<option value="">Select State</option>` +
-          statesList.map(s => `<option value="${s}">${s}</option>`).join("");
-
-        ddl.onchange = async function () {
-          await loadDistributorsByState(this.value);
-        };
-      } catch (e) {
-        console.log("Could not load states");
-      }
-    }
-
-    async function loadDistributorsByState(state) {
-      stateDistributors = [];
-      selectedTourStops = [];
-      renderTourStateList();
-      renderSelectedTourStops();
-      clearRoute();
-
-      if (!state) return;
-
-      const res = await fetch(`/api/distributors/by-state/${encodeURIComponent(state)}`);
-      stateDistributors = await res.json();
-
-      renderTourStateList();
-      drawMarkersForStateTour();
-    }
-
-    function renderTourStateList() {
-      const box = document.getElementById("tourStateList");
-
-      if (!stateDistributors.length) {
-        box.innerHTML = `<div style="color:#666;">No distributors loaded for selected state.</div>`;
-        return;
-      }
-
-      box.innerHTML = stateDistributors.map(r => {
-        const selected = selectedTourStops.some(x => x.id === r.id);
-        return `
-          <div class="tour-item ${selected ? "selected" : ""}" onclick="toggleTourStop(${r.id})">
-            <div><b>${r.distributor_name || ""}</b>${selected ? '<span class="tour-badge">Selected</span>' : ""}</div>
-            <div>${r.district || ""}</div>
-            <div style="font-size:12px;color:#666;">${r.mobile || ""}</div>
-          </div>
-        `;
-      }).join("");
-    }
-
-    function renderSelectedTourStops() {
-      const box = document.getElementById("tourSelectedList");
-
-      if (!selectedTourStops.length) {
-        box.innerHTML = `<div style="color:#666;">No stops selected yet.</div>`;
-        return;
-      }
-
-      box.innerHTML = selectedTourStops.map((r, idx) => `
-        <div class="tour-stop">
-          <div>
-            <b>${idx + 1}. ${r.distributor_name || ""}</b><br>
-            <span style="font-size:12px;color:#666;">${r.district || ""}</span>
-          </div>
-          <button class="remove-stop" onclick="removeTourStop(${r.id})">Remove</button>
-        </div>
-      `).join("");
-    }
-
-    function getStopCoords(r) {
-      if (r.lat && r.lng) return [parseFloat(r.lat), parseFloat(r.lng)];
-      return districtCoords[normalizeDistrict(r.district)];
-    }
-
-    function toggleTourStop(id) {
-      const row = stateDistributors.find(r => r.id === id);
-      if (!row) return;
-
-      const exists = selectedTourStops.some(x => x.id === id);
-      if (exists) {
-        selectedTourStops = selectedTourStops.filter(x => x.id !== id);
-      } else {
-        selectedTourStops.push(row);
-      }
-
-      renderTourStateList();
-      renderSelectedTourStops();
-      drawMarkersForStateTour();
-      drawRouteLine();
-    }
-
-    function removeTourStop(id) {
-      selectedTourStops = selectedTourStops.filter(x => x.id !== id);
-      renderTourStateList();
-      renderSelectedTourStops();
-      drawMarkersForStateTour();
-      drawRouteLine();
-    }
-
-    function clearTourPlan() {
-      selectedTourStops = [];
-      document.getElementById("tourDate").value = "";
-      document.getElementById("tourRemarks").value = "";
-      showTourMsg("");
-      renderTourStateList();
-      renderSelectedTourStops();
-      drawMarkersForStateTour();
-      clearRoute();
-      clearSavedTourMapHighlights();
-    }
-
-    async function saveTourPlan() {
-      const state = document.getElementById("tourState").value;
-      const visit_date = document.getElementById("tourDate").value;
-      const remarks = document.getElementById("tourRemarks").value.trim();
-
-      if (!state) {
-        showTourMsg("Please select a state", true);
-        return;
-      }
-
-      if (!visit_date) {
-        showTourMsg("Please select a visit date", true);
-        return;
-      }
-
-      if (!selectedTourStops.length) {
-        showTourMsg("Please select at least one distributor", true);
-        return;
-      }
-
-      const payload = {
-        visit_date,
-        state,
-        remarks,
-        stops: selectedTourStops.map(r => ({
-          id: r.id,
-          distributor_name: r.distributor_name,
-          district: r.district,
-          address: r.address,
-          lat: r.lat,
-          lng: r.lng,
-          status: "Planned"
-        }))
-      };
-
-      try {
-        const res = await fetch("/api/tour-plans", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(payload)
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showTourMsg(data.error || "Tour save failed", true);
-          return;
-        }
-
-        showTourMsg(`Tour saved successfully. Stops saved: ${data.inserted}`);
-      } catch (e) {
-        showTourMsg("Tour save request failed", true);
-      }
-    }
-
-    async function loadSavedTours() {
-      const visitDate = document.getElementById("viewTourDate").value;
-      const box = document.getElementById("savedTourList");
-
-      if (!visitDate) {
-        showSavedTourMsg("Please select a date", true);
-        return;
-      }
-
-      try {
-        const res = await fetch(`/api/tour-plans/${encodeURIComponent(visitDate)}`);
-        const rows = await res.json();
-
-        if (!rows.length) {
-          box.innerHTML = `<div style="color:#666;">No saved tour plans for this date.</div>`;
-          showSavedTourMsg("No tours found");
-          clearSavedTourMapHighlights();
-          return;
-        }
-
-        box.innerHTML = rows.map(r => `
-          <div class="saved-tour-item">
-            <div class="saved-tour-head">
-              <div>
-                <b>${r.distributor_name || ""}</b><br>
-                <span style="font-size:13px;color:#555;">
-                  ${r.state || ""} • ${r.district || ""}
-                </span><br>
-                <span style="font-size:13px;color:#555;">
-                  ${r.address || ""}
-                </span>
-              </div>
-
-              <div>
-                <span class="status-badge ${
-                  (r.status || "Planned").toLowerCase() === "visited"
-                    ? "status-visited"
-                    : (r.status || "Planned").toLowerCase() === "cancelled"
-                    ? "status-cancelled"
-                    : "status-planned"
-                }">
-                  ${r.status || "Planned"}
-                </span>
-              </div>
-            </div>
-
-            <div style="margin-top:10px; display:flex; gap:8px; flex-wrap:wrap;">
-              <button class="small-btn blue-btn" onclick="showSavedTourOnMap(${r.id}, ${r.lat || "null"}, ${r.lng || "null"}, '${String(r.district || "").replace(/'/g, "\\'")}')">
-                Show on Map
-              </button>
-
-              <button class="small-btn" style="background:#16a34a;" onclick="markVisitCompleted(${r.id})">
-                Mark Completed
-              </button>
-            </div>
-          </div>
-        `).join("");
-
-        showSavedTourMsg(`Loaded ${rows.length} saved stop(s)`);
-        drawSavedTourRoute(rows);
-      } catch (e) {
-        showSavedTourMsg("Could not load saved tours", true);
-      }
-    }
-
-    async function markVisitCompleted(id) {
-      try {
-        const res = await fetch(`/api/tour-plans/status/${id}`, {
-          method: "PUT",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ status: "Visited" })
-        });
-
-        const data = await res.json();
-
-        if (!res.ok) {
-          showSavedTourMsg(data.error || "Could not update status", true);
-          return;
-        }
-
-        showSavedTourMsg("Visit marked as completed");
-        loadSavedTours();
-      } catch (e) {
-        showSavedTourMsg("Status update failed", true);
-      }
-    }
-
-    function initMap() {
-      if (map) return;
-
-      map = L.map("map").setView([22.9734, 78.6569], 5);
-
-      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-        attribution: "&copy; OpenStreetMap"
-      }).addTo(map);
-
-      markerLayer = L.layerGroup().addTo(map);
-      routeLayer = L.layerGroup().addTo(map);
-
-      map.on("click", async function (e) {
-        const { lat, lng } = e.latlng;
-        createOrMoveSelectedMarker(lat, lng);
-
-        const addr = await reverseGeocode(lat, lng);
-        if (addr) document.getElementById("address").value = addr;
-      });
-    }
-
-    function drawMarkers() {
-      if (!markerLayer) return;
-
-      markerLayer.clearLayers();
-      markerMap = {};
-
-      const bounds = [];
-
-      filteredRows.forEach(r => {
-        const coords = getStopCoords(r);
-        if (!coords) return;
-
-        const isSelected = selectedId === r.id;
-        const isTourStop = selectedTourStops.some(x => x.id === r.id);
-
-        const marker = L.circleMarker(coords, {
-          radius: isSelected ? 10 : (isTourStop ? 9 : 7),
-          color: isSelected ? "#b45309" : (isTourStop ? "#1d4ed8" : "#065f46"),
-          weight: isSelected ? 2 : 1,
-          fillColor: isSelected ? "#f59e0b" : (isTourStop ? "#3b82f6" : "#16a34a"),
-          fillOpacity: 0.95
-        });
-
-        marker.bindPopup(`
-          <b>${r.distributor_name || ""}</b><br>
-          State: ${r.state || ""}<br>
-          District: ${r.district || ""}<br>
-          Mobile: ${r.mobile || ""}<br>
-          Email: ${r.email || ""}<br>
-          Address: ${r.address || ""}
-        `);
-
-        marker.on("click", () => {
-          selectedId = r.id;
-
-          const tourState = document.getElementById("tourState").value;
-          if (tourState && String(tourState).toLowerCase() === String(r.state || "").toLowerCase()) {
-            toggleTourStop(r.id);
-          } else {
-            renderTable();
-            drawMarkers();
-          }
-        });
-
-        marker.addTo(markerLayer);
-        markerMap[r.id] = marker;
-        bounds.push(coords);
-      });
-
-      if (selectedId && markerMap[selectedId]) {
-        const marker = markerMap[selectedId];
-        map.setView(marker.getLatLng(), 8);
-        marker.openPopup();
-      } else if (bounds.length > 0 && !selectedTourStops.length) {
-        map.fitBounds(bounds, { padding: [30, 30] });
-      }
-    }
-
-    function drawMarkersForStateTour() {
-      renderTable();
-      drawMarkers();
-    }
-
-    function clearRoute() {
-      if (routeLayer) routeLayer.clearLayers();
-    }
-
-    function clearSavedTourMapHighlights() {
-      if (routeLayer) routeLayer.clearLayers();
-    }
-
-    function drawRouteLine() {
-      clearRoute();
-      if (!routeLayer) return;
-
-      const points = selectedTourStops.map(getStopCoords).filter(Boolean);
-      if (!points.length) return;
-
-      if (points.length >= 2) {
-        L.polyline(points, {
-          color: "#2563eb",
-          weight: 5,
-          opacity: 0.85
-        }).addTo(routeLayer);
-      }
-
-      points.forEach((pt, idx) => {
-        L.circleMarker(pt, {
-          radius: 11,
-          color: "#1e3a8a",
-          weight: 2,
-          fillColor: "#2563eb",
-          fillOpacity: 0.95
-        })
-          .addTo(routeLayer)
-          .bindTooltip(`Stop ${idx + 1}`, { permanent: true, direction: "top" });
-      });
-
-      map.fitBounds(points, { padding: [40, 40] });
-    }
-
-    function drawSavedTourRoute(rows) {
-      clearSavedTourMapHighlights();
-      if (!routeLayer) return;
-
-      const points = rows.map(getStopCoords).filter(Boolean);
-      if (!points.length) return;
-
-      if (points.length >= 2) {
-        L.polyline(points, {
-          color: "#7c3aed",
-          weight: 5,
-          opacity: 0.9,
-          dashArray: "8,6"
-        }).addTo(routeLayer);
-      }
-
-      points.forEach((pt, idx) => {
-        L.circleMarker(pt, {
-          radius: 10,
-          color: "#581c87",
-          weight: 2,
-          fillColor: "#a855f7",
-          fillOpacity: 0.95
-        })
-          .addTo(routeLayer)
-          .bindTooltip(`Saved Stop ${idx + 1}`, { permanent: true, direction: "top" });
-      });
-
-      map.fitBounds(points, { padding: [40, 40] });
-    }
-
-    function showSavedTourOnMap(id, lat, lng, district) {
-      let coords = null;
-
-      if (lat && lng) {
-        coords = [parseFloat(lat), parseFloat(lng)];
-      } else {
-        coords = districtCoords[normalizeDistrict(district)];
-      }
-
-      if (!coords || !map) return;
-
-      map.setView(coords, 10);
-
-      L.circleMarker(coords, {
-        radius: 12,
-        color: "#7c2d12",
-        weight: 2,
-        fillColor: "#fb923c",
-        fillOpacity: 0.95
-      })
-        .addTo(routeLayer)
-        .bindPopup(`Saved Tour Stop #${id}`)
-        .openPopup();
-    }
-
-    function focusDistributor(id) {
-      selectedId = id;
-      renderTable();
-      drawMarkers();
-    }
-  </script>
 </body>
 </html>
